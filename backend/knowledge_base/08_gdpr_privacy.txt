@@ -1,0 +1,3 @@
+policy_name: Data Privacy & GDPR
+definition: APIs handling PII must ensure lawful processing and data minimization.
+kong_mandatory_plugins: request-transformer-advanced, response-transformer-advanced

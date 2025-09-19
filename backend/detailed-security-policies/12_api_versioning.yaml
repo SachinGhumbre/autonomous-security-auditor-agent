@@ -1,0 +1,16 @@
+policy_name: API Versioning & Lifecycle
+definition: >
+  All APIs must have lifecycle states and versioning strategy.
+explanation: >
+  Prevents breaking changes and shadow APIs.
+kong_solution:
+  - request-transformer route by version
+  - API catalog governance
+references:
+  - OWASP: API9
+  - ISO 27001: A.18
+sample_kong_config:
+  name: custom-plugin
+  config:
+    example_field: example_value
+    enabled: true

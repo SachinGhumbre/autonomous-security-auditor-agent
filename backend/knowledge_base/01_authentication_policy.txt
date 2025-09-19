@@ -1,0 +1,3 @@
+policy_name: Authentication Policy
+kong_mandatory_plugins: oidc, oauth2, key-auth
+kong_optional_plugins: hmac-auth, ldap-auth, basic-auth

@@ -1,0 +1,15 @@
+policy_name: TLS/HTTPS Enforcement
+definition: >
+  All API traffic must be encrypted in transit using TLS 1.2+.
+explanation: >
+  Prevents MITM attacks and data leakage.
+kong_solution:
+  - config: enforce_https_only: true
+references:
+  - OWASP: API9
+  - ISO 27001: A.13.2
+sample_kong_config:
+  name: custom-plugin
+  config:
+    example_field: example_value
+    enabled: true
