@@ -1,0 +1,3 @@
+policy_name: Authorization Policy
+kong_mandatory_plugins: acl
+kong_optional_plugins: opa

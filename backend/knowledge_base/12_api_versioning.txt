@@ -1,0 +1,5 @@
+policy_name: API Versioning & Lifecycle
+definition: All APIs must have lifecycle states and versioning strategy.
+kong_solution:
+  - request-transformer route by version
+  - API catalog governance

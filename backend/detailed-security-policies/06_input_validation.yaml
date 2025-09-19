@@ -1,0 +1,16 @@
+policy_name: Input Validation
+definition: >
+  All API request inputs must be validated against a schema.
+explanation: >
+  Prevents injection attacks and malformed payloads.
+kong_solution:
+  - plugin: request-validator
+  - plugin: json-threat-protection
+references:
+  - OWASP: API8
+  - GDPR: Integrity of Data
+sample_kong_config:
+  name: request-validator
+  config:
+    example_field: example_value
+    enabled: true
