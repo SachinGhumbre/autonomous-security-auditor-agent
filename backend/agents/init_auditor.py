@@ -21,7 +21,6 @@ def run_remediation():
         return jsonify({"error": "Missing 'audit_report' in request body"}), 400
     try:
         result = rem_app.invoke({"audit_report": input_data["audit_report"]})
-        print('Result in init_auditor...:', result)
         remediation_plan = result.get("remediation_plan", [])       
         return jsonify(remediation_plan), 200
     except Exception as e:

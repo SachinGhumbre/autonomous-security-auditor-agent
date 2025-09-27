@@ -184,15 +184,12 @@ def reason_remediation(state: dict) -> dict:
     if response.status_code == 200:
         try:
             remediation_plan = response.json()
-            print("LLM API response:", json.dumps(remediation_plan, indent=2))
             state["remediation_plan"] = remediation_plan
         except ValueError:
             print("Error: Response is not valid JSON.")
-            print("Raw response:", response.text)
             state["remediation_plan"] = []
     else:
         print(f"LLM API call failed with status {response.status_code}")
-        print("Raw response:", response.text)
         state["remediation_plan"] = []
 
     ##state["remediation_plan"] = remediation_plan 

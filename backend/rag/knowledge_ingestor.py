@@ -63,7 +63,6 @@ def ingest_knowledge_base():
     r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, decode_responses=False)
 
     # Create Redis vector index if it doesn't exist
-    print("[KnowledgeIngestor] Creating Redis vector index if not exists...",os.getenv("INDEX_NAME") )
     index_name = os.getenv("INDEX_NAME", "security_auditor_index")
     try:
         # Try to fetch index info; if it doesn't exist, create the index
