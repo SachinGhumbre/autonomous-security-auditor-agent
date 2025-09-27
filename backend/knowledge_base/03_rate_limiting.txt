@@ -1,0 +1,3 @@
+Policy Name: Rate Limiting & Spike Arrest Policy v1.0
+Mandatory Plugins to Comply to this policy: rate-limiting
+Description: This policy defines the rate limiting and spike arrest mechanisms supported by Kong Gateway to protect APIs and services from excessive requests and potential abuse. It includes mandatory plugins that can be configured to enforce request limits and control traffic spikes.

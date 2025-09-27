@@ -1,3 +1,0 @@
-policy_name: Logging & Audit Trails
-definition: All API access and admin ops must be logged for auditing.
-kong_solution: validate if at least one logging plugin is configured on services or routes such as file-log, http-log, syslog, or tcp-log. Ensure sensitive fields are redacted in logs. 

@@ -1,12 +1,26 @@
-{
-  "ApigeeToKongGenAIService:01_authentication_policy.txt": "Remediation for ApigeeToKongGenAIService:01_authentication_policy.txt: {'compliance': {'jwt': 'missing', 'key-auth': 'missing', 'oauth2': 'missing'}, 'policy_file': '01_authentication_policy.txt', 'service_name': 'ApigeeToKongGenAIService', 'summary': 'The Kong service is NON-COMPLIANT with the Authentication Policy. None of the mandatory authentication plugins (jwt, oauth2, key-auth) are attached. All required plugins are missing, which exposes the service to unauthenticated access. Immediate remediation is required to comply with enterprise security policies.'}",
-  "HealthService:01_authentication_policy.txt": "Remediation for HealthService:01_authentication_policy.txt: {'compliance': {'jwt': 'missing', 'key-auth': 'used', 'oauth2': 'missing'}, 'policy_file': '01_authentication_policy.txt', 'service_name': 'HealthService', 'summary': \"Out of the three mandatory authentication plugins (jwt, oauth2, key-auth), only 'key-auth' is attached to the HealthService. The service is missing the 'jwt' and 'oauth2' plugins, resulting in partial non-compliance with the enterprise authentication policy.\"}",
-  "KongTest:01_authentication_policy.txt": "Remediation for KongTest:01_authentication_policy.txt: {'compliance': {'jwt': 'missing', 'key-auth': 'used', 'oauth2': 'used'}, 'policy_file': '01_authentication_policy.txt', 'service_name': 'KongTest', 'summary': 'Out of the three mandatory authentication plugins (jwt, oauth2, key-auth), two (oauth2, key-auth) are attached to the service, while one (jwt) is missing. The service is not fully compliant with the Authentication Policy, as the jwt plugin is required but not present.'}",
-  "KongTestJSONXMLProtection:01_authentication_policy.txt": "Remediation for KongTestJSONXMLProtection:01_authentication_policy.txt: {'compliance': {'jwt': 'missing', 'key-auth': 'missing', 'oauth2': 'missing'}, 'policy_file': '01_authentication_policy.txt', 'service_name': 'KongTestJSONXMLProtection', 'summary': 'Non-compliant: None of the mandatory authentication plugins (jwt, oauth2, key-auth) are attached to the Kong service. Immediate remediation is required to enforce authentication controls as per the enterprise policy.'}",
-  "Mock_API_Target:01_authentication_policy.txt": "Remediation for Mock_API_Target:01_authentication_policy.txt: {'compliance': {'jwt': 'missing', 'key-auth': 'missing', 'oauth2': 'missing'}, 'policy_file': '01_authentication_policy.txt', 'service_name': 'Mock_API_Target', 'summary': 'Non-compliant: None of the mandatory authentication plugins (jwt, oauth2, key-auth) are attached to the service. Immediate remediation required to comply with the Authentication Policy.'}",
-  "OnboardingService:01_authentication_policy.txt": "Remediation for OnboardingService:01_authentication_policy.txt: {'compliance': {'jwt': 'missing', 'key-auth': 'missing', 'oauth2': 'missing'}, 'policy_file': '01_authentication_policy.txt', 'service_name': 'OnboardingService', 'summary': 'Non-compliant: None of the mandatory authentication plugins (jwt, oauth2, key-auth) are attached to the service.'}",
-  "Retail-Backend:01_authentication_policy.txt": "Remediation for Retail-Backend:01_authentication_policy.txt: {'compliance': {'jwt': 'missing', 'key-auth': 'missing', 'oauth2': 'missing'}, 'policy_file': '01_authentication_policy.txt', 'service_name': 'Retail-Backend', 'summary': 'None of the mandatory authentication plugins (jwt, oauth2, key-auth) are attached to the service. The service is non-compliant with the Authentication Policy.'}",
-  "Test:01_authentication_policy.txt": "Remediation for Test:01_authentication_policy.txt: {'compliance': {'jwt': 'missing', 'key-auth': 'missing', 'oauth2': 'missing'}, 'policy_file': '01_authentication_policy.txt', 'service_name': 'Test', 'summary': 'None of the mandatory authentication plugins (jwt, oauth2, key-auth) are attached to the service. The service is non-compliant with the Authentication Policy.'}",
-  "petstore:01_authentication_policy.txt": "Remediation for petstore:01_authentication_policy.txt: {'compliance': {'jwt': 'missing', 'key-auth': 'missing', 'oauth2': 'missing'}, 'policy_file': '01_authentication_policy.txt', 'service_name': 'petstore', 'summary': \"The service 'petstore' is not compliant with the 'Authentication Policy'. All mandatory authentication plugins (jwt, oauth2, key-auth) are missing.\"}",
-  "testservice:01_authentication_policy.txt": "Remediation for testservice:01_authentication_policy.txt: {'compliance': {'jwt': 'missing', 'key-auth': 'missing', 'oauth2': 'missing'}, 'policy_file': '01_authentication_policy.txt', 'service_name': 'testservice', 'summary': 'All mandatory authentication plugins (jwt, oauth2, key-auth) are missing from the service configuration. The service is non-compliant with the Authentication Policy.'}"
-}
+[
+  {
+    "serviceName": "HealthService",
+    "policyName": "Data Masking & Sensitive Headers Policy",
+    "issue": "Required 'response-transformer' plugin is not enabled, violating the Data Masking & Sensitive Headers Policy.",
+    "missingPlugin": "response-transformer",
+    "recommendedAction": "Enable and configure the 'response-transformer' plugin to mask sensitive information and headers in API responses.",
+    "severity": "Medium",
+    "owner": "HealthService API Team",
+    "estimatedEffort": "2 hours",
+    "impact": "Without response transformation, sensitive data may be inadvertently exposed in API responses, increasing risk of data leakage.",
+    "securityStandardReference": "OWASP API Security Top 10 \u2013 API6:2019 (Sensitive Data Exposure)"
+  },
+  {
+    "serviceName": "KongTest",
+    "policyName": "Authentication Enforcement",
+    "issue": "Required 'jwt' plugin is missing, violating policy for secure token-based authentication.",
+    "missingPlugin": "jwt",
+    "recommendedAction": "Deploy the 'jwt' plugin to enforce JWT-based authentication and ensure only authorized clients access the APIs.",
+    "severity": "Critical",
+    "owner": "KongTest API Team",
+    "estimatedEffort": "4 hours",
+    "impact": "Missing JWT authentication makes APIs vulnerable to unauthorized access and attacks, risking compromise of protected resources.",
+    "securityStandardReference": "OWASP API Security Top 10 \u2013 API2:2019 (Broken User Authentication), NIST SP 800-53 IA-2"
+  }
+]

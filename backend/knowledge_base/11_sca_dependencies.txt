@@ -1,4 +1,0 @@
-policy_name: Software Composition Analysis
-definition: Only vetted dependencies should be used, scanned regularly.
-kong_solution: SCA tools: OWASP Dependency-Check, Snyk
-

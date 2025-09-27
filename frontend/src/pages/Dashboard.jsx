@@ -1,217 +1,456 @@
-
 import React, { useEffect, useMemo, useState } from 'react';
-
+import Toast from './Toast';
 function Dashboard() {
-  const [audits, setAudits] = useState([]);
+  const [auditsReport, setAuditsReport] = useState([]);
+  const [ingestedData, setIngestedData] = useState([]);
   const [message, setMessage] = useState('');
   const [report, setReport] = useState(null);
-
-  useEffect(() => {
-    const fetchAudits = async () => {
-      try {
-        // Mock API call for audits
-        const mockAudits = [
-          { id: 1, status: 'Completed', date: '2023-10-26' },
-          { id: 2, status: 'Pending', date: '2023-10-25' },
-        ];
-        setAudits(mockAudits);
-      } catch (error) {
-        console.error('Error fetching audits:', error);
-      }
-    };
-    fetchAudits();
-  }, []);
+  const [remediationData, setRemediationData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [activeButton, setActiveButton] = useState('');
 
   const handleIngestEmbeddings = async () => {
+    setLoading(true);
+    setActiveButton('ingest');
+    setError(null);
     setMessage('');
-    setReport(null); // Hide report when ingesting embeddings
+    setReport(null);
     try {
-      // Mock API call for embedding
-      const response = await fetch('https://api.example.com/ingest-embeddings', { method: 'POST' });
+      const response = await fetch('http://localhost:5001/api/v1/knowledge/ingest', {
+        method: 'POST',
+        body: JSON.stringify({}),
+        headers: { 'Content-Type': 'application/json' }
+      });
       if (response.ok) {
-        setMessage('Embeddings ingested successfully!');
+        const data = await response.json();
+        setMessage('✅ All Security Policies Ingested successfully!');
+        setIngestedData([data]);
       } else {
-        setMessage('Failed to ingest embeddings.');
+        setMessage('❌ Failed to ingest Security Policies.');
       }
     } catch (error) {
-      console.error('Error ingesting embeddings:', error);
-      setMessage('Error ingesting embeddings.');
+      console.error('Error ingesting Security Policies:', error);
+      setMessage('❌ Error ingesting Security Policies.');
+    } finally {
+      setLoading(false);
+      setActiveButton('');
     }
   };
 
   const handleStartAuditor = async () => {
+    setLoading(true);
+    setActiveButton('audit');
+    setError(null);
     setMessage('');
     setReport(null);
-    // The report will be set to data.report if the API call is successful, making it visible.
+    setAuditsReport([]);
+    setIngestedData([]);
     try {
-      // Mock API call for auditor
-      const response = await fetch('https://httpbin.org/post', { method: 'POST' });
+      const response = await fetch('http://localhost:5000/api/v1/ai-agents/audit', {
+        method: 'POST',
+        body: JSON.stringify({}),
+        headers: { 'Content-Type': 'application/json' }
+      });
       if (response.ok) {
-        // Mock data for the report
-        const data = {
-          report: [
-            {
-              srNo: 1, apiServiceName: 'User Service', pluginsUsed: 'jwt, rate-limiting', securityPolicy: 'Authentication, Authorization', complianceStatus: 'compliant', recommendation: 'None',
-            },
-            {
-              srNo: 2, apiServiceName: 'Product Service', pluginsUsed: 'oauth2', securityPolicy: 'Authentication', complianceStatus: 'non-compliant', recommendation: 'Add Authorization Policy',
-            },
-            {
-              srNo: 3, apiServiceName: 'Order Service', pluginsUsed: 'acl', securityPolicy: 'Rate Limiting', complianceStatus: 'compliant', recommendation: 'None',
-            },
-            {
-              srNo: 4, apiServiceName: 'Payment Service', pluginsUsed: 'ssl', securityPolicy: 'Encryption', complianceStatus: 'compliant', recommendation: 'None',
-            },
-            {
-              srNo: 5, apiServiceName: 'Shipping Service', pluginsUsed: 'cors', securityPolicy: 'Authentication', complianceStatus: 'non-compliant', recommendation: 'Implement OAuth',
-            },
-            {
-              srNo: 6, apiServiceName: 'Inventory Service', pluginsUsed: 'ip-restriction', securityPolicy: 'Access Control', complianceStatus: 'compliant', recommendation: 'None',
-            },
-          ],
-        };
-        setReport(data.report);
-        setMessage('Auditor started successfully!');
+        const data = await response.json();
+        if (data && data.audit_report) {
+          setAuditsReport(JSON.stringify({ audit_report: data.audit_report }));
+          const reportArr = Object.entries(data.audit_report).map(([key, value]) => {
+            const policies = value.policies || value.results || [];
+            const policy_checks = policies.map(p => ({
+              ...p,
+              comply: typeof p.comply === 'string' ? p.comply.toLowerCase() === 'comply' : !!p.comply,
+              missing_plugins: p.missing_plugins || [],
+              policy_name: p.policy_name,
+              required_for: p.required_for || p.policy_name,
+              details: p.details || ''
+            }));
+            return {
+              serviceName: value.serviceName,
+              policy_checks
+            };
+          });
+          setReport(reportArr);
+        }
+        setMessage('✅ Audit Completed successfully!');
       } else {
-        setMessage('Failed to start auditor.');
+        setMessage('❌ Failed to start auditor.');
       }
     } catch (error) {
       console.error('Error starting auditor:', error);
-      setMessage('Error starting auditor.');
+      setMessage('❌ Error starting auditor.');
+    } finally {
+      setLoading(false);
+      setActiveButton('');
     }
   };
 
-  const handleGenerateExcel = () => {
-    alert('Generating Excel report...');
-    // Logic to generate Excel file
+  const handleGenerateAuditReport = () => {
+    alert('Generating Audit report...');
   };
 
-  const handleSendEmail = () => {
-    alert('Sending report via email...');
-    // Logic to send email
-  };
+  const fetchRemediationPlan = async () => {
+    setMessage('');
+    setIngestedData([]);
+    setLoading(true);
+    setActiveButton('remediate');
+    setError(null);
+    try {
+      const response = await fetch('http://localhost:5000/api/v1/ai-agents/remediate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          audit_report: JSON.parse(auditsReport).audit_report
+        })
+      });
 
-  const getStatusRowClass = (status) => {
-    switch (status.toLowerCase()) {
-      case 'compliant':
-        return 'bg-green-100';
-      case 'non-compliant':
-        return 'bg-red-100';
-      default:
-        return '';
+      if (!response.ok) {
+        throw new Error(`Server responded with ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      setRemediationData(data);
+    } catch (err) {
+      console.error('Error fetching remediation plan:', err);
+      setError('❌ Failed to fetch remediation plan.');
+    } finally {
+      setLoading(false);
+      setActiveButton('');
     }
   };
 
   const sortedReport = useMemo(() => {
-    if (!report) {
-      return null;
-    }
-    // Create a new array to avoid mutating state directly
-    return [...report].sort((a, b) => {
-      if (a.status === b.status) return 0; // Keep original order for same status
-      return a.complianceStatus.toLowerCase() === 'non-compliant' ? -1 : 1;
+    if (!report) return null;
+    const flat = [];
+    report.forEach(serviceObj => {
+      serviceObj.policy_checks.forEach(policy => {
+        flat.push({ ...policy, serviceName: serviceObj.serviceName });
+      });
     });
+    flat.sort((a, b) => (a.comply === b.comply ? 0 : a.comply ? 1 : -1));
+    return flat;
   }, [report]);
 
   const handleReset = () => {
-    setAudits([]);
+    setAuditsReport([]);
     setMessage('');
     setReport(null);
+    setIngestedData([]);
+    setRemediationData([]);
+    setError(null);
   };
 
-
   return (
-    <div className="container mx-auto p-4">
-      <div className="flex space-x-4 mb-4">
+    <div className="container mx-auto p-6 bg-gray-50 rounded-lg shadow-lg">
+
+      {error && (
+        <p className="text-red-600 text-sm font-medium">{error}</p>
+      )}
+
+
+      {message && (
+        <Toast message={message} type={message.includes('success') ? 'success' : 'error'} />
+      )}
+      
+      {/* Action Buttons */}
+      <div className="flex flex-wrap gap-4 justify-center mb-6">
         <button
           onClick={handleIngestEmbeddings}
-          className="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded"
+          disabled={loading && activeButton === 'ingest'}
+          className={`px-5 py-2 rounded font-semibold shadow-md transition duration-200 ${activeButton === 'ingest' && loading
+            ? 'bg-orange-300 cursor-not-allowed'
+            : 'bg-orange-500 hover:bg-orange-600 text-white'
+            }`}
         >
-          Ingest Embeddings
+          {activeButton === 'ingest' && loading ? 'Processing...' : 'Ingest Security Policies'}
         </button>
+
         <button
           onClick={handleStartAuditor}
-          className="bg-blue-900 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          disabled={loading && activeButton === 'audit'}
+          className={`px-5 py-2 rounded font-semibold shadow-md transition duration-200 ${activeButton === 'audit' && loading
+            ? 'bg-blue-300 cursor-not-allowed'
+            : 'bg-blue-900 hover:bg-blue-700 text-white'
+            }`}
         >
-          Start Autonomous Auditor
+          {activeButton === 'audit' && loading
+            ? 'Running Audit...'
+            : 'Start Security Audit and Generate Report'}
         </button>
+
         <button
           onClick={handleReset}
-          className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+          className="bg-gray-600 hover:bg-gray-700 text-white font-semibold px-5 py-2 rounded shadow-md transition duration-200"
         >
           Reset
         </button>
       </div>
 
-      {message && (
-        <div className={`mb-4 p-3 rounded ${message.includes('successfully') ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'}`}>
-          {message}
-        </div>
-      )}
+      {/* Status Messages */}
+      <div className="mb-4 text-center">
+        {loading && (
+          <p className="text-blue-700 text-sm animate-pulse">
+            Auditor Process in progress...
+          </p>
+        )}
 
-      {sortedReport && (
-        <div className="mb-8">
-          <h3 className="text-xl mb-3">Audit Report</h3>
-          <div className="overflow-x-auto">
-            <table className="min-w-full bg-white border border-gray-200">
-              <thead>
-                <tr>
-                  <th className="py-2 px-4 border-b">Sr. No.</th>
-                  <th className="py-2 px-4 border-b">API Service Name</th>
-                  <th className="py-2 px-4 border-b">Plugins Used</th>
-                  <th className="py-2 px-4 border-b">Security Policy</th>
-                  <th className="py-2 px-4 border-b">Compliance Status</th>
-                  <th className="py-2 px-4 border-b">Recommendation</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sortedReport.map((item, index) => (
-                  <tr key={index} className={getStatusRowClass(item.complianceStatus)}>
-                    <td className="py-2 px-4 border-b">{item.srNo}</td>
-                    <td className="py-2 px-4 border-b">{item.apiServiceName}</td>
-                    <td className="py-2 px-4 border-b">{item.pluginsUsed}</td>
-                    <td className="py-2 px-4 border-b">{item.securityPolicy}</td>
-                    <td className="py-2 px-4 border-b">{item.complianceStatus}</td>
-                    <td className="py-2 px-4 border-b">{item.recommendation}</td>
+
+        {/* Security Policy Table */}
+        {ingestedData.length > 0 && (
+          <div className="mb-8">
+            <h3 className="text-2xl font-bold text-center text-white bg-gradient-to-r from-indigo-700 to-indigo-900 py-3 rounded shadow-md mb-6">
+              Security Policies Ingested Report
+            </h3>
+            <div className="w-full overflow-x-auto rounded-lg shadow-lg">
+              <table className="min-w-[1000px] bg-white border border-gray-300 rounded-lg">
+                <thead className="bg-indigo-100 sticky top-0 z-10">
+                  <tr>
+                    {["Index Name", "Chunk ID", "Content", "Metadata"].map((header, idx) => (
+                      <th
+                        key={idx}
+                        className="py-3 px-4 border-b text-left text-sm font-semibold text-indigo-900 whitespace-nowrap"
+                      >
+                        {header}
+                      </th>
+                    ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {ingestedData.map((item, idx) =>
+                    Array.isArray(item.chunks)
+                      ? item.chunks.map((chunk, cidx) => (
+                        <tr
+                          key={`${idx}-${cidx}`}
+                          className={cidx % 2 === 0 ? "bg-white" : "bg-gray-50 hover:bg-indigo-50"}
+                        >
+                          <td className="py-2 px-4 border-b whitespace-nowrap">{item.index_name}</td>
+                          <td className="py-2 px-4 border-b whitespace-nowrap">{chunk.chunk_id}</td>
+                          <td className="py-2 px-4 border-b">
+                            <pre className="whitespace-pre-wrap text-xs bg-gray-100 p-2 rounded text-gray-800">
+                              {chunk.content}
+                            </pre>
+                          </td>
+                          <td className="py-2 px-4 border-b">
+                            <pre className="whitespace-pre-wrap text-xs bg-gray-100 p-2 rounded text-gray-800">
+                              {chunk.metadata}
+                            </pre>
+                          </td>
+                        </tr>
+                      ))
+                      : null
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
-          <div className="flex space-x-4 mt-4">
-            <button
-              onClick={handleGenerateExcel}
-              className="bg-blue-900 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-            >
-              Generate Excel Report
-            </button>
-            <button
-              onClick={handleSendEmail}
-              className="bg-blue-900 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-            >
-              Send Report in Email
-            </button>
-          </div>
-        </div>
-      )}
+        )}
 
-      {!report && (
-        <div className="mt-8 p-6 bg-gray-100 rounded-lg shadow-md">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-4">Welcome to the Autonomous Security Auditor Agent</h2>
-          <p className="text-gray-700 mb-4">
-            This tool is designed to automate the security auditing process for your services.
-            By leveraging advanced AI capabilities, it can identify potential security vulnerabilities
-            and compliance issues within your configurations and policies.
-          </p>
-          <p className="text-gray-700">
-            It can be used by Enterprise Security Auditors, compliance teams, and DevSecOps professionals to ensure regulatory compliance and security best practices.
-            The agent will analyze your API configurations and provide a detailed report with
-            actionable recommendations to enhance your security posture.
-          </p>
-        </div>
-      )}
+        {/* Audit Report Table */}
+        {sortedReport && (
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-center text-white bg-gradient-to-r from-blue-700 to-blue-900 py-3 rounded shadow-md mb-6">
+              Security Audit Report
+            </h2>
+            <div className="w-full max-w-full overflow-x-auto rounded-lg shadow-lg scrollbar-thin scrollbar-thumb-blue-500 scrollbar-track-blue-100">
+              <table className="min-w-[1200px] bg-white border border-gray-300 rounded-lg">
+                <thead className="bg-blue-100 sticky top-0 z-10">
+                  <tr>
+                    {[
+                      "Sr. No.",
+                      "Service Name",
+                      "Security Policy Name",
+                      "Compliance Status",
+                      "Missing Plugins",
+                      "Details"
+                    ].map((header, idx) => (
+                      <th
+                        key={idx}
+                        className="py-3 px-4 border-b text-left text-sm font-semibold text-blue-900 whitespace-nowrap"
+                      >
+                        {header}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {sortedReport.map((policy, idx) => (
+                    <tr
+                      key={idx}
+                      className={
+                        policy.comply
+                          ? "bg-green-50 hover:bg-green-100"
+                          : "bg-red-50 hover:bg-red-100"
+                      }
+                    >
+                      <td className="py-2 px-4 border-b whitespace-nowrap">{idx + 1}</td>
+                      <td className="py-2 px-4 border-b whitespace-nowrap">{policy.serviceName}</td>
+                      <td className="py-2 px-4 border-b whitespace-nowrap">{policy.policy_name}</td>
+                      <td className="py-2 px-4 border-b font-semibold whitespace-nowrap">
+                        {policy.comply ? (
+                          <span className="text-green-700">Compliant</span>
+                        ) : (
+                          <span className="text-red-700">Non-Compliant</span>
+                        )}
+                      </td>
+                      <td className="py-2 px-4 border-b whitespace-nowrap">
+                        {!policy.comply && policy.missing_plugins?.length > 0
+                          ? policy.missing_plugins.map((mp, mpIdx) => (
+                            <div key={mpIdx} className="text-sm text-gray-800">
+                              <span className="font-semibold">
+                                {mp.plugin || mp.name || JSON.stringify(mp)}
+                              </span>
+                              {mp.required_for && (
+                                <span className="text-xs text-gray-600">
+                                  {" "}
+                                  (Required for: {mp.required_for})
+                                </span>
+                              )}
+                            </div>
+                          ))
+                          : "-"}
+                      </td>
+                      <td className="py-2 px-4 border-b whitespace-nowrap">
+                        {policy.details ? (
+                          <pre className="whitespace-pre-wrap text-xs bg-gray-100 p-2 rounded text-gray-800">
+                            {policy.details}
+                          </pre>
+                        ) : (
+                          "-"
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Audit Actions */}
+            <div className="flex flex-wrap gap-4 mt-6 justify-center">
+              <button
+                onClick={handleGenerateAuditReport}
+                className="bg-blue-600 text-white px-5 py-2 rounded hover:bg-blue-700 transition duration-200 shadow-md"
+              >
+                Download Audit Report
+              </button>
+              <button
+                onClick={fetchRemediationPlan}
+                disabled={loading && activeButton === 'remediate'}
+                className={`px-5 py-2 rounded font-semibold shadow-md transition duration-200 ${activeButton === 'remediate' && loading
+                  ? 'bg-blue-300 cursor-not-allowed'
+                  : 'bg-blue-600 hover:bg-blue-700 text-white'
+                  }`}
+              >
+                {activeButton === 'remediate' && loading
+                  ? 'Generating Remediation Plan...'
+                  : 'Run Remediation Plan'}
+              </button>
+
+              {loading && activeButton === 'remediate' && (
+                <p className="mt-4 text-blue-600 text-sm animate-pulse">
+                  Loading remediation plan...
+                </p>
+              )}
+              {error && (
+                <p className="mt-4 text-red-600 text-sm font-medium">{error}</p>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Remediation Plan Table */}
+        {remediationData.length > 0 && (
+
+
+          <div className="w-full overflow-x-auto">
+            <h3 className="text-2xl font-bold text-center text-white bg-gradient-to-r from-blue-700 to-blue-900 py-3 rounded shadow-md mb-6">
+              Remediation Plan
+            </h3>
+            <div className="min-w-[1600px] inline-block align-middle">
+              <table className="w-full bg-white border border-gray-300 rounded-lg">
+                <thead className="bg-blue-100 sticky top-0 z-10">
+                  <tr>
+                    {[
+                      "Service Name",
+                      "Policy Name",
+                      "Issue",
+                      "Missing Plugin(s)",
+                      "Recommended Action",
+                      "Severity",
+                      "Owner",
+                      "Estimated Effort",
+                      "Impact",
+                      "Security Standard Reference"
+                    ].map((header, idx) => (
+                      <th
+                        key={idx}
+                        className="py-3 px-4 border-b text-left text-sm font-semibold text-blue-900 whitespace-nowrap"
+                      >
+                        {header}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {remediationData.map((item, idx) => (
+                    <tr
+                      key={idx}
+                      className={idx % 2 === 0 ? "bg-white" : "bg-gray-50 hover:bg-blue-50"}
+                    >
+                      <td className="py-2 px-4 border-b whitespace-nowrap">{item.serviceName}</td>
+                      <td className="py-2 px-4 border-b whitespace-nowrap">{item.policyName}</td>
+                      <td className="py-2 px-4 border-b whitespace-nowrap">
+                        <pre className="whitespace-pre-wrap text-xs bg-gray-100 p-2 rounded text-gray-800">
+                          {item.issue}
+                        </pre>
+                      </td>
+                      <td className="py-2 px-4 border-b whitespace-nowrap">
+                        {Array.isArray(item.missingPlugin)
+                          ? item.missingPlugin.join(', ')
+                          : item.missingPlugin}
+                      </td>
+                      <td className="py-2 px-4 border-b whitespace-nowrap">
+                        <pre className="whitespace-pre-wrap text-xs bg-gray-100 p-2 rounded text-gray-800">
+                          {item.recommendedAction}
+                        </pre>
+                      </td>
+                      <td className="py-2 px-4 border-b font-semibold text-red-600 whitespace-nowrap">
+                        {item.severity}
+                      </td>
+                      <td className="py-2 px-4 border-b whitespace-nowrap">{item.owner}</td>
+                      <td className="py-2 px-4 border-b whitespace-nowrap">{item.estimatedEffort}</td>
+                      <td className="py-2 px-4 border-b whitespace-nowrap">
+                        <pre className="whitespace-pre-wrap text-xs bg-gray-100 p-2 rounded text-gray-800">
+                          {item.impact}
+                        </pre>
+                      </td>
+                      <td className="py-2 px-4 border-b whitespace-nowrap">{item.securityStandardReference}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* Welcome Section */}
+        {!report && ingestedData.length === 0 && (
+          <div className="mt-8 p-6 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg shadow-md">
+            <h2 className="text-2xl font-bold text-center text-gray-800 mb-4">
+              Welcome to the Autonomous Security Auditor Agents
+            </h2>
+            <p className="text-gray-700 mb-4 leading-relaxed text-justify">
+              The <strong>Autonomous Security Auditor Agentic AI</strong> is an advanced application designed to automate the auditing and remediation of API configurations for organizations using Kong API Gateway and Kong AI Gateway. Leveraging AI, large language models (LLMs), and agentic workflows, this tool enables organizations to continuously validate API configurations against enterprise security and compliance policies, identify risks, and remediate issues with minimal manual intervention.
+            </p>
+            <p className="text-gray-700 leading-relaxed text-justify">
+              The Autonomous Security Auditor Agentic AI bridges these gaps by automatically auditing API proxy configurations in Kong against organizational security policies. It generates actionable audit reports and enables one-click remediation, ensuring every API adheres to mandatory security standards. This tool empowers <strong>developers, DevSecOps engineers, reviewers, auditors, and architects</strong> to maintain compliance and security without deep expertise in every policy, reducing risk and streamlining the review process.
+            </p>
+          </div>
+        )}
+
+      </div>
     </div>
   );
 }
-
 export default Dashboard;

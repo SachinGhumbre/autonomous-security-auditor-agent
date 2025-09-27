@@ -1,20 +1,5 @@
 [
   {
-    "service_name": "testservice",
-    "service_id": "0168f3b9-b2eb-4da6-9ba3-f676c2f1d9f9",
-    "service_plugins": []
-  },
-  {
-    "service_name": "Retail-Backend",
-    "service_id": "05aa95dd-c464-42d1-a5d7-27d6ed820dab",
-    "service_plugins": []
-  },
-  {
-    "service_name": "OnboardingService",
-    "service_id": "60eaf85a-d72a-4e50-8309-ce5fc2b99330",
-    "service_plugins": []
-  },
-  {
     "service_name": "HealthService",
     "service_id": "6236158c-3d45-4d04-bd36-1c648b6570cf",
     "service_plugins": [
@@ -23,23 +8,8 @@
     ]
   },
   {
-    "service_name": "Mock_API_Target",
-    "service_id": "86f21256-7aef-48fe-95ac-cc6459c7976f",
-    "service_plugins": []
-  },
-  {
-    "service_name": "KongTestJSONXMLProtection",
-    "service_id": "94eb46f1-4da7-43b2-85d0-ee4d8563cd6b",
-    "service_plugins": []
-  },
-  {
     "service_name": "ApigeeToKongGenAIService",
     "service_id": "bd01d039-5f7f-4c5c-82ed-20ec0e87df95",
-    "service_plugins": []
-  },
-  {
-    "service_name": "Test",
-    "service_id": "cf0cbeac-a7d7-474c-b27b-8c23010845f1",
     "service_plugins": []
   },
   {
@@ -58,10 +28,5 @@
       "basic-auth",
       "oauth2"
     ]
-  },
-  {
-    "service_name": "petstore",
-    "service_id": "f3206683-9e80-4c45-a599-553f83c34c1f",
-    "service_plugins": []
   }
 ]

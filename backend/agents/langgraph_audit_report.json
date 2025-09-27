@@ -1,102 +1,117 @@
 {
-  "testservice:01_authentication_policy.txt": {
-    "service_name": "testservice",
-    "policy_file": "01_authentication_policy.txt",
-    "compliance": {
-      "jwt": "missing",
-      "oauth2": "missing",
-      "key-auth": "missing"
-    },
-    "summary": "All mandatory authentication plugins (jwt, oauth2, key-auth) are missing from the service configuration. The service is non-compliant with the Authentication Policy."
+  "HealthService:policy:HealthService": {
+    "serviceName": "HealthService",
+    "policies": [
+      {
+        "policy_name": "API Authentication Enforcement",
+        "comply": true,
+        "missing_plugins": [],
+        "details": ""
+      },
+      {
+        "policy_name": "API Request Content Validation",
+        "comply": false,
+        "missing_plugins": [
+          "request-size-limiting"
+        ],
+        "details": "The 'request-size-limiting' plugin is required to comply with enterprise policy for request content validation, but it is missing from the service."
+      },
+      {
+        "policy_name": "Transport Security Enforcement",
+        "comply": false,
+        "missing_plugins": [
+          "acl"
+        ],
+        "details": "The 'acl' plugin is required to enforce transport security policies (such as network-level access control), but it is missing from the service."
+      }
+    ]
   },
-  "Retail-Backend:01_authentication_policy.txt": {
-    "service_name": "Retail-Backend",
-    "policy_file": "01_authentication_policy.txt",
-    "compliance": {
-      "jwt": "missing",
-      "oauth2": "missing",
-      "key-auth": "missing"
-    },
-    "summary": "None of the mandatory authentication plugins (jwt, oauth2, key-auth) are attached to the service. The service is non-compliant with the Authentication Policy."
+  "ApigeeToKongGenAIService:policy:ApigeeToKongGenAIService": {
+    "serviceName": "ApigeeToKongGenAIService",
+    "policies": [
+      {
+        "policy_name": "Authentication Policy",
+        "comply": false,
+        "missing_plugins": [
+          "key-auth",
+          "oauth2",
+          "jwt",
+          "ldap-auth"
+        ],
+        "details": "At least one authentication plugin (key-auth, oauth2, jwt, or ldap-auth) is required to comply with the Authentication Policy."
+      },
+      {
+        "policy_name": "Rate Limiting Policy",
+        "comply": false,
+        "missing_plugins": [
+          "rate-limiting",
+          "rate-limiting-advanced"
+        ],
+        "details": "A rate-limiting plugin (rate-limiting or rate-limiting-advanced) is required to comply with the Rate Limiting Policy."
+      },
+      {
+        "policy_name": "Logging Policy",
+        "comply": false,
+        "missing_plugins": [
+          "http-log",
+          "file-log",
+          "syslog",
+          "tcp-log",
+          "udp-log"
+        ],
+        "details": "A logging plugin (http-log, file-log, syslog, tcp-log, or udp-log) is required to comply with the Logging Policy."
+      },
+      {
+        "policy_name": "API Security Headers Policy",
+        "comply": false,
+        "missing_plugins": [
+          "correlation-id",
+          "request-transformer",
+          "response-transformer"
+        ],
+        "details": "A plugin to inject security headers (correlation-id, request-transformer, or response-transformer) is required for the API Security Headers Policy."
+      }
+    ]
   },
-  "OnboardingService:01_authentication_policy.txt": {
-    "service_name": "OnboardingService",
-    "policy_file": "01_authentication_policy.txt",
-    "compliance": {
-      "jwt": "missing",
-      "oauth2": "missing",
-      "key-auth": "missing"
-    },
-    "summary": "Non-compliant: None of the mandatory authentication plugins (jwt, oauth2, key-auth) are attached to the service."
-  },
-  "HealthService:01_authentication_policy.txt": {
-    "service_name": "HealthService",
-    "policy_file": "01_authentication_policy.txt",
-    "compliance": {
-      "jwt": "missing",
-      "oauth2": "missing",
-      "key-auth": "used"
-    },
-    "summary": "Out of the three mandatory authentication plugins (jwt, oauth2, key-auth), only 'key-auth' is attached to the HealthService. The service is missing the 'jwt' and 'oauth2' plugins, resulting in partial non-compliance with the enterprise authentication policy."
-  },
-  "Mock_API_Target:01_authentication_policy.txt": {
-    "service_name": "Mock_API_Target",
-    "policy_file": "01_authentication_policy.txt",
-    "compliance": {
-      "jwt": "missing",
-      "oauth2": "missing",
-      "key-auth": "missing"
-    },
-    "summary": "Non-compliant: None of the mandatory authentication plugins (jwt, oauth2, key-auth) are attached to the service. Immediate remediation required to comply with the Authentication Policy."
-  },
-  "KongTestJSONXMLProtection:01_authentication_policy.txt": {
-    "service_name": "KongTestJSONXMLProtection",
-    "policy_file": "01_authentication_policy.txt",
-    "compliance": {
-      "jwt": "missing",
-      "oauth2": "missing",
-      "key-auth": "missing"
-    },
-    "summary": "Non-compliant: None of the mandatory authentication plugins (jwt, oauth2, key-auth) are attached to the Kong service. Immediate remediation is required to enforce authentication controls as per the enterprise policy."
-  },
-  "ApigeeToKongGenAIService:01_authentication_policy.txt": {
-    "service_name": "ApigeeToKongGenAIService",
-    "policy_file": "01_authentication_policy.txt",
-    "compliance": {
-      "jwt": "missing",
-      "oauth2": "missing",
-      "key-auth": "missing"
-    },
-    "summary": "The Kong service is NON-COMPLIANT with the Authentication Policy. None of the mandatory authentication plugins (jwt, oauth2, key-auth) are attached. All required plugins are missing, which exposes the service to unauthenticated access. Immediate remediation is required to comply with enterprise security policies."
-  },
-  "Test:01_authentication_policy.txt": {
-    "service_name": "Test",
-    "policy_file": "01_authentication_policy.txt",
-    "compliance": {
-      "jwt": "missing",
-      "oauth2": "missing",
-      "key-auth": "missing"
-    },
-    "summary": "None of the mandatory authentication plugins (jwt, oauth2, key-auth) are attached to the service. The service is non-compliant with the Authentication Policy."
-  },
-  "KongTest:01_authentication_policy.txt": {
-    "service_name": "KongTest",
-    "policy_file": "01_authentication_policy.txt",
-    "compliance": {
-      "jwt": "missing",
-      "oauth2": "used",
-      "key-auth": "used"
-    },
-    "summary": "Out of the three mandatory authentication plugins (jwt, oauth2, key-auth), two (oauth2, key-auth) are attached to the service, while one (jwt) is missing. The service is not fully compliant with the Authentication Policy, as the jwt plugin is required but not present."
-  },
-  "petstore:01_authentication_policy.txt": {
-    "service_name": "petstore",
-    "policy_file": "01_authentication_policy.txt",
-    "compliance": {
-      "jwt": "missing",
-      "oauth2": "missing",
-      "key-auth": "missing"
-    },
-    "summary": "The service 'petstore' is not compliant with the 'Authentication Policy'. All mandatory authentication plugins (jwt, oauth2, key-auth) are missing."
+  "KongTest:policy:KongTest": {
+    "serviceName": "KongTest",
+    "policies": [
+      {
+        "policy_name": "Rate Limiting Policy",
+        "comply": true,
+        "missing_plugins": [],
+        "details": null
+      },
+      {
+        "policy_name": "IP Restriction Policy",
+        "comply": true,
+        "missing_plugins": [],
+        "details": null
+      },
+      {
+        "policy_name": "OAuth2 Policy",
+        "comply": true,
+        "missing_plugins": [],
+        "details": null
+      },
+      {
+        "policy_name": "API Key Authentication Policy",
+        "comply": true,
+        "missing_plugins": [],
+        "details": null
+      },
+      {
+        "policy_name": "Request Transformation Policy",
+        "comply": true,
+        "missing_plugins": [],
+        "details": null
+      },
+      {
+        "policy_name": "Basic Authentication Policy",
+        "comply": true,
+        "missing_plugins": [],
+        "details": null
+      }
+    ]
   }
 }
