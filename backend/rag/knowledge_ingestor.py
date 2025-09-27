@@ -1,32 +1,90 @@
+
 from flask import Flask, jsonify
 import os
-import redis
 import uuid
 import time
-import google.generativeai as genai
+from openai import AzureOpenAI
+from azure.core.credentials import AzureKeyCredential
+from dotenv import load_dotenv
+import redis
+from redis.commands.search.field import TagField, VectorField, TextField
+from redis.commands.search.index_definition import IndexDefinition, IndexType
+import numpy as np
+from flask_cors import CORS
+
+load_dotenv()
 
 app = Flask(__name__)
+CORS(app)
 
 # Configuration
 REDIS_HOST = os.getenv("REDIS_HOST")
-REDIS_PORT = os.getenv("REDIS_PORT")
-VECTOR_DIMENSIONS = int(os.getenv("VECTOR_DIMENSIONS", "768"))  # Set default or adjust as per Gemini model
+REDIS_PORT = int(os.getenv("REDIS_PORT"))
+VECTOR_DIMENSIONS = int(os.getenv("VECTOR_DIMENSIONS"))
 CHUNK_SIZE = 300  # characters per chunk
+
+AZURE_OPENAI_API_KEY = os.getenv("AZURE_OPENAI_API_KEY")
+AZURE_OPENAI_ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT")
+AZURE_OPENAI_EMBEDDING_MODEL_NAME = os.getenv("AZURE_OPENAI_EMBEDDING_MODEL_NAME")
+AZURE_OPENAI_EMBEDDING_DEPLOYMENT = os.getenv("AZURE_OPENAI_EMBEDDING_DEPLOYMENT")
+AZURE_API_VERSION = os.getenv("AZURE_API_VERSION")
+
 
 # Initialize Redis
 redis_client = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, decode_responses=True)
 
-# Initialize Gemini API
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-genai.configure(api_key=GEMINI_API_KEY)
+# Initialize Azure OpenAI client
+client = AzureOpenAI(
+    api_version=AZURE_API_VERSION,
+    azure_endpoint=AZURE_OPENAI_ENDPOINT,
+    api_key=AZURE_OPENAI_API_KEY
+)
 
 # Directory to ingest
-KNOWLEDGE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "knowledge_base", "api_policies"))
+KNOWLEDGE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "knowledge_base"))
 
-@app.route('/ingest', methods=['POST'])
+def get_embedding(text):
+    """
+    Generate an embedding for the given text using Azure OpenAI.
+    """
+    response = client.embeddings.create(
+        input=[text],
+        model=AZURE_OPENAI_EMBEDDING_DEPLOYMENT
+    )
+    return response.data[0].embedding
+
+@app.route('/api/v1/knowledge/ingest', methods=['POST'])
 def ingest_knowledge_base():
+
     if not os.path.exists(KNOWLEDGE_DIR):
         return jsonify({"error": "Directory not found"}), 404
+
+    # Connect to Redis
+    r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, decode_responses=False)
+
+    # Create Redis vector index if it doesn't exist
+    print("[KnowledgeIngestor] Creating Redis vector index if not exists...",os.getenv("INDEX_NAME") )
+    index_name = os.getenv("INDEX_NAME", "security_auditor_index")
+    try:
+        # Try to fetch index info; if it doesn't exist, create the index
+        try:
+            r.ft(index_name).info()
+        except Exception:
+            schema = (
+                TextField("content"),
+                VectorField("vector",
+                            "FLAT",  # or "HNSW"
+                            {
+                                "TYPE": "FLOAT32",
+                                "DIM": VECTOR_DIMENSIONS,
+                                "DISTANCE_METRIC": "COSINE"
+                            }),
+                TagField("metadata")
+            )
+            definition = IndexDefinition(prefix=["embedding:"], index_type=IndexType.HASH)
+            r.ft(index_name).create_index(schema, definition=definition)
+    except Exception as e:
+        print(f"Index creation error: {e}")
 
     ingested_chunks = []
     for filename in os.listdir(KNOWLEDGE_DIR):
@@ -39,23 +97,15 @@ def ingest_knowledge_base():
             chunks = [content[i:i+CHUNK_SIZE] for i in range(0, len(content), CHUNK_SIZE)]
 
             for chunk in chunks:
-                # Generate embedding using Gemini
+                # Generate embedding using your existing embedding model
                 try:
-                    # Use the embeddings API directly
-                    embedding_response = genai.embed_content(
-                        model="models/embedding-001",
-                        content=chunk,
-                        task_type="retrieval_document"
-                    )
-                    embedding = embedding_response['embedding']
+                    embedding = get_embedding(chunk)  # Replace with your embedding function
                 except Exception as e:
                     return jsonify({"error": f"Embedding failed for {filename}: {str(e)}"}), 500
 
-                # Validate dimensions
                 if len(embedding) != VECTOR_DIMENSIONS:
                     return jsonify({"error": f"Embedding dimension mismatch for {filename}"}), 500
 
-                # Metadata for Kong RAG Injector
                 chunk_id = str(uuid.uuid4())
                 metadata = {
                     "filename": filename,
@@ -64,16 +114,35 @@ def ingest_knowledge_base():
                     "source": "api_policies"
                 }
 
-                # Store in Redis
+                # Store in Redis with vector field as bytes (float32)
                 redis_key = f"embedding:{chunk_id}"
-                redis_client.hset(redis_key, mapping={
+                vector_bytes = np.array(embedding, dtype=np.float32).tobytes()
+                r.hset(redis_key, mapping={
                     "content": chunk,
-                    "vector": str(embedding),
+                    "vector": vector_bytes,
                     "metadata": str(metadata)
                 })
                 ingested_chunks.append(chunk_id)
 
-    return jsonify({"message": "Ingestion complete", "chunks": ingested_chunks}), 200
+    # Gather details of all ingested chunks from Redis
+    chunk_details = []
+    for chunk_id in ingested_chunks:
+        redis_key = f"embedding:{chunk_id}"
+        data = r.hgetall(redis_key)
+        # Convert vector bytes back to list for readability (optional)
+        vector = np.frombuffer(data.get(b"vector", b""), dtype=np.float32).tolist()
+        chunk_details.append({
+            "chunk_id": chunk_id,
+            "content": data.get(b"content", "").decode("utf-8") if data.get(b"content") else "",
+            "vector": vector,
+            "metadata": data.get(b"metadata", "").decode("utf-8") if data.get(b"metadata") else ""
+        })
+
+    return jsonify({
+        "message": "Ingestion complete",
+        "chunks": chunk_details,
+        "index_name": index_name
+    }), 200
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(debug=True, port=5001)

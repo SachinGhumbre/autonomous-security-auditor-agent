@@ -1,5 +1,0 @@
-policy_name: API Discovery & Documentation
-definition: All APIs must be registered, documented, and versioned.
-kong_solution:
-  - decK sync with OpenAPI spec
-  - Developer portalr

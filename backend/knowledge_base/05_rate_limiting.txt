@@ -1,5 +1,0 @@
-policy_name: Rate Limiting & Spike Arrest
-definition: APIs must enforce request rate limiting per client to prevent DoS.
-kong_mandatory_plugins: rate-limiting
-kong_optional_plugins: flood-control (custom)
-kong_solution: validate if rate-limiting or flood-control plugins are configured on services or routes.

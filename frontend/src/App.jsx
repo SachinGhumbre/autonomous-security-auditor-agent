@@ -14,8 +14,7 @@ function App() {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      <main className="flex flex-grow">
-        {isAuthenticated && <Sidebar setActivePage={setActivePage} />}
+      <main className="flex flex-grow items-center">
         <div className="flex-grow p-4">
           {!isAuthenticated ? (
             <Login onLogin={() => setIsAuthenticated(true)} />

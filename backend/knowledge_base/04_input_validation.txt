@@ -1,0 +1,3 @@
+Policy Name: Input Validation Policy v1.0
+Description: This policy defines the input validation mechanisms supported by Kong Gateway to ensure that incoming requests conform
+Mandatory Plugins to Comply to this policy: request-validator

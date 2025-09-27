@@ -1,3 +1,0 @@
-policy_name: TLS/HTTPS Enforcement
-definition:  All API traffic must be encrypted in transit using TLS 1.2+.
-kong_solution: validate if any services are exposed over HTTP instead of HTTPS. validate if any routes use HTTP instead of HTTPS.

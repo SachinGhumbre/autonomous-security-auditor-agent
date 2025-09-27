@@ -68,61 +68,39 @@ def perceive_kong(state: dict) -> dict:
     return state
 
 def reason_audit(state: dict) -> dict:
-    print("[AuditAgent] Reasoning: Evaluating policies...")
+    import json
+    import requests
+
+    print("[AuditAgent] Reasoning: Sending Kong service data to Azure API for policy compliance evaluation...")
 
     audit_report = {}
     kong_data_list = state.get("kong_data", [])
-
-    policy_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "knowledge_base", "api_policies"))
+    KONG_AI_PROXY_HOSTNAME = os.getenv("KONG_AI_PROXY_HOSTNAME")
 
     for kong_data in kong_data_list:
         service_name = kong_data.get("service_name", "unknown_service")
-        attached_plugins = kong_data.get("service_plugins", [])
-
-        for filename in os.listdir(policy_dir):
-            if filename.endswith(".txt"):
-                with open(os.path.join(policy_dir, filename), 'r') as f:
-                    policy_text = f.read()
-
-                prompt = f"""You are an autonomous security auditor agent.
-                            Your task is to evaluate Kong API Gateway service configurations against enterprise security policies and generate an audit report.
-                            ### Inputs:
-                            - **Policy Text**:
-                            ```
-                            {policy_text}
-                            ```
-                            - **Kong Service Data**:
-                                "attached_plugins": {json.dumps(attached_plugins, indent=2)} 
-
-                            ### Instructions:
-                            1. Read the policy carefully and identify which plugins are **mandatory** for compliance.
-                            2. Compare the plugins attached to the given Kong service against the mandatory plugins.
-                            3. For each mandatory plugin:
-                                - Check if it is present.
-                                - Mark its compliance status as `"used"` or `"missing"`.
-                            ### Output Format:
-                            Return a JSON object with the following structure:
-                            {{
-                                "service_name": "{service_name}",
-                                "policy_file": "{filename}",
-                                "compliance": {{
-                                    "plugin_name_1": "used/missing",
-                                    "plugin_name_2": "used/missing",
-                                    ...
-                                }},
-                                "summary": "Summary of compliance status."
-                            }}
-                            """
-
-                print("PROMPT - ", prompt)
-                response = requests.post('https://kong-30caf13d76ushgpgq.kongcloud.dev/api/v1/azure-test', json={"messages": [{"role": "user", "content": prompt}]})
-                ##response = {"json": lambda: {"response": "Mocked response for testing purposes"}} # Mocked response for testing purposes
-
-                key = f"{service_name}:{filename}"
-                audit_report[key] = response.json() ##.get('response', 'No response received')
+        service_plugins = kong_data.get("service_plugins", [])
+        print(f"Auditing service: {service_name} with plugins: {service_plugins}")
+        
+        # Call the Kong AI Proxy API
+        response = requests.post(
+            f'{KONG_AI_PROXY_HOSTNAME}/api/v1/agents/auditor', headers={"Content-Type": "application/json","x-api-key": os.getenv("KONG_API_KEY")},    
+            json={
+                    "messages": [
+                        {
+                            "role": "user",
+                            "content": f" I have fetched Kong service and its plugin configurations from Kong gateway. The service name is {service_name} and plugins are {service_plugins}"
+                        }
+                    ]
+                }
+        )
+        audit_report_key = f"{service_name}:policy:{service_name}"
+        try:
+            audit_report[audit_report_key] = response.json()
+        except Exception:
+            audit_report[audit_report_key] = {"error": "Failed to parse response"}
 
     state["audit_report"] = audit_report
-
     return state
 
 def plan_audit(state: dict) -> dict:
@@ -143,14 +121,86 @@ def perceive_issues(state: dict) -> dict:
 
 def reason_remediation(state: dict) -> dict:
     print("[RemediationAgent] Reasoning: Generating remediation plan...")
-    remediation_plan = {}
-    for key, value in state["audit_report"].items():
-        remediation_plan[key] = f"Remediation for {key}: {value}"
-    state["remediation_plan"] = remediation_plan
+    # Prepare audit context for LLM
+    KONG_AI_PROXY_HOSTNAME = os.getenv("KONG_AI_PROXY_HOSTNAME")
+    remediation_input = []
+
+    severity_map = {
+        "Authentication": "Critical",
+        "Rate Limiting": "High",
+        "Request Size Limiting": "Medium",
+        "Logging": "Medium",
+        "IP Restriction": "Low",
+        "Request Transformation": "Low"
+    }
+
+    for service_key, service_data in state["audit_report"].items():
+        service_name = service_data.get("serviceName", service_key)
+        for policy in service_data.get("policies", []):
+            comply = policy.get("comply", policy.get("comply_status", True))
+            if not comply:
+                policy_name = policy.get("policy_name", "Unknown Policy")
+                severity = severity_map.get(policy_name.split()[0], "Medium")
+                remediation_input.append({
+                    "serviceName": service_name,
+                    "policyName": policy_name,
+                    "details": policy.get("details", "Non-compliance detected."),
+                    "missingPlugins": policy.get("missing_plugins", []),
+                    "severity": severity
+                })
+
+    remediation_input_json = json.dumps(remediation_input, indent=2)
+
+    # Construct the prompt
+    prompt = (
+            "You are an API security expert. Based on the following audit report, "
+            "generate a remediation plan in JSON format. "
+            "Each item should include: serviceName, policyName, issue, missingPlugin, "
+            "recommendedAction, severity, owner, estimatedEffort, impact, "
+            "and securityStandardReference (e.g., OWASP, GDPR, NIST, ISO 27001, etc.)."
+            "Please ensure the output is a valid JSON array and does not contain any extra text or explanation.\n\n"
+            f"Audit Report:\n{remediation_input_json}"
+        )
+
+    # Call the Kong AI Proxy API
+    response = requests.post(
+            f'{KONG_AI_PROXY_HOSTNAME}/api/v1/agents/remediate',
+            headers={
+                "Content-Type": "application/json",
+                "x-api-key": os.getenv("KONG_API_KEY")
+            },
+            json={
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": prompt
+                    }
+                ]
+            }
+    )
+
+
+    # Safe response handling
+    if response.status_code == 200:
+        try:
+            remediation_plan = response.json()
+            print("LLM API response:", json.dumps(remediation_plan, indent=2))
+            state["remediation_plan"] = remediation_plan
+        except ValueError:
+            print("Error: Response is not valid JSON.")
+            print("Raw response:", response.text)
+            state["remediation_plan"] = []
+    else:
+        print(f"LLM API call failed with status {response.status_code}")
+        print("Raw response:", response.text)
+        state["remediation_plan"] = []
+
+    ##state["remediation_plan"] = remediation_plan 
     return state
 
 def plan_remediation(state: dict) -> dict:
     print("[RemediationAgent] Planning: Structuring remediation steps...")
+    # Future enhancement: group by service, prioritize by severity
     return state
 
 def action_remediation(state: dict) -> dict:
@@ -158,6 +208,7 @@ def action_remediation(state: dict) -> dict:
     with open("langgraph_remediation_plan.json", "w") as f:
         json.dump(state["remediation_plan"], f, indent=2)
     return state
+
 
 # === Build and Run Audit Agent Graph ===
 
@@ -188,5 +239,4 @@ rem_graph.add_edge("plan", "act")
 rem_app = rem_graph.compile()
 
 rem_state = rem_app.invoke({"audit_report": audit_state["audit_report"]})
-
 print("✅ Audit and remediation completed successfully.")

@@ -1,5 +1,0 @@
-policy_name: Input Validation
-definition: All API request inputs must be validated against a schema.
-kong_mandatory_plugins: request-validator
-kong_optional_plugins: requequest-size-limiting
-kong_solution: validate if request-validator or request-size-limiting plugins are configured on services or routes.
