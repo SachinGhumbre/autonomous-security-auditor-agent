@@ -26,53 +26,6 @@
       }
     ]
   },
-  "ApigeeToKongGenAIService:policy:ApigeeToKongGenAIService": {
-    "serviceName": "ApigeeToKongGenAIService",
-    "policies": [
-      {
-        "policy_name": "Authentication Policy",
-        "comply": false,
-        "missing_plugins": [
-          "key-auth",
-          "oauth2",
-          "jwt",
-          "ldap-auth"
-        ],
-        "details": "At least one authentication plugin (key-auth, oauth2, jwt, or ldap-auth) is required to comply with the Authentication Policy."
-      },
-      {
-        "policy_name": "Rate Limiting Policy",
-        "comply": false,
-        "missing_plugins": [
-          "rate-limiting",
-          "rate-limiting-advanced"
-        ],
-        "details": "A rate-limiting plugin (rate-limiting or rate-limiting-advanced) is required to comply with the Rate Limiting Policy."
-      },
-      {
-        "policy_name": "Logging Policy",
-        "comply": false,
-        "missing_plugins": [
-          "http-log",
-          "file-log",
-          "syslog",
-          "tcp-log",
-          "udp-log"
-        ],
-        "details": "A logging plugin (http-log, file-log, syslog, tcp-log, or udp-log) is required to comply with the Logging Policy."
-      },
-      {
-        "policy_name": "API Security Headers Policy",
-        "comply": false,
-        "missing_plugins": [
-          "correlation-id",
-          "request-transformer",
-          "response-transformer"
-        ],
-        "details": "A plugin to inject security headers (correlation-id, request-transformer, or response-transformer) is required for the API Security Headers Policy."
-      }
-    ]
-  },
   "KongTest:policy:KongTest": {
     "serviceName": "KongTest",
     "policies": [
