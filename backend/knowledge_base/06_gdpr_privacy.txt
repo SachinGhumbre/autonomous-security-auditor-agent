@@ -1,0 +1,3 @@
+Policy Name: Data Privacy & GDPR Policy v1.0
+Description: APIs handling PII must ensure lawful processing and data minimization.
+Mandatory Plugins to Comply to this policy: request-transformer-advanced, response-transformer-advanced
