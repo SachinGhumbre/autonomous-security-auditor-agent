@@ -1,4 +1,15 @@
-
+"""
+===============================================================================
+ File Name   : knowledge_ingestor.py
+ Description : Autonomous Security Auditor Knowledge Ingestor file helps to 
+               ingest organization security policies into Redis vector database.
+ Author      : Sachin Ghumbre
+ Created On  : 2025-09-26
+ Version     : v1.0.0
+ License     : Proprietary
+ Tags        : python, redis, kong, konnect, genai, audit, langgraph, agentic ai
+===============================================================================
+"""
 from flask import Flask, jsonify
 import os
 import uuid

@@ -1,3 +1,15 @@
+"""
+===============================================================================
+ File Name   : init_auditor.py
+ Description : Autonomous Security Auditor Agent Init file containing two Flask
+               routes for two agents Audit and Remediate.
+ Author      : Sachin Ghumbre
+ Created On  : 2025-09-26
+ Version     : v1.0.0
+ License     : Proprietary
+ Tags        : kong, konnect, genai, audit, langgraph, agentic ai
+===============================================================================
+"""
 from flask import Flask, request, jsonify
 from auditor_agent import audit_state, rem_state, audit_app, rem_app
 from flask_cors import CORS
