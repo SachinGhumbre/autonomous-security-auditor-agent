@@ -8,13 +8,6 @@
     ]
   },
   {
-    "service_name": "ApigeeToKongGenAIService",
-    "service_id": "bd01d039-5f7f-4c5c-82ed-20ec0e87df95",
-    "service_plugins": [
-      "key-auth"
-    ]
-  },
-  {
     "service_name": "KongTest",
     "service_id": "f1d04faa-4f10-4efd-9eea-d07aa8cab138",
     "service_plugins": [
