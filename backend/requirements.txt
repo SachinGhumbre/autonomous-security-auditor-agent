@@ -1,0 +1,14 @@
+Flask
+python-dotenv
+langchain
+langchain-google-genai
+chromadb
+langchain_community
+flask_cors
+requests
+langgraph_agents
+json
+redis
+openai
+zure-core
+numpy

@@ -1,0 +1,14 @@
+[
+  {
+    "serviceName": "HealthService",
+    "policyName": "Authorization Policy",
+    "issue": "Required authorization policy is not enforced due to missing 'acl' plugin.",
+    "missingPlugin": "acl",
+    "recommendedAction": "Enable the 'acl' plugin for HealthService to enforce authorization policies and restrict access to only authorized clients.",
+    "severity": "Medium",
+    "owner": "API Gateway Team",
+    "estimatedEffort": "2 hours",
+    "impact": "Without the 'acl' plugin, unauthorized access to sensitive health-related endpoints is possible, potentially leading to data breaches.",
+    "securityStandardReference": "OWASP API Security Top 10 (API5:2019 - Broken Function Level Authorization)"
+  }
+]

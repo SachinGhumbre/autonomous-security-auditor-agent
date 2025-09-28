@@ -1,0 +1,14 @@
+version: "3.9"
+
+networks:
+  kong-net:
+    driver: bridge
+
+services:
+  redis:
+    image: redis/redis-stack-server
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - kong-net

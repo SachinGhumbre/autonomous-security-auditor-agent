@@ -1,0 +1,29 @@
+[
+  {
+    "service_name": "HealthService",
+    "service_id": "6236158c-3d45-4d04-bd36-1c648b6570cf",
+    "service_plugins": [
+      "request-transformer",
+      "key-auth"
+    ]
+  },
+  {
+    "service_name": "ApigeeToKongGenAIService",
+    "service_id": "bd01d039-5f7f-4c5c-82ed-20ec0e87df95",
+    "service_plugins": [
+      "key-auth"
+    ]
+  },
+  {
+    "service_name": "KongTest",
+    "service_id": "f1d04faa-4f10-4efd-9eea-d07aa8cab138",
+    "service_plugins": [
+      "basic-auth",
+      "oauth2",
+      "key-auth",
+      "request-transformer",
+      "rate-limiting",
+      "ip-restriction"
+    ]
+  }
+]
