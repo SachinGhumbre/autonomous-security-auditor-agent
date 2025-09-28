@@ -1,0 +1,508 @@
+_format_version: "3.0"
+_info:
+  defaults: {}
+  select_tags:
+  - autonomous-security-auditor-agent
+_konnect:
+  control_plane_name: serverless-test-gateway
+consumers:
+- keyauth_credentials:
+  - key: CHAME_KEY_KONG_CONSUMER_KEY
+    tags:
+    - autonomous-security-auditor-agent
+  tags:
+  - autonomous-security-auditor-agent
+  username: Auditor-Client-App
+services:
+- connect_timeout: 60000
+  enabled: true
+  host: localhost
+  name: AuditorAgentAI_Service
+  plugins:
+  - config:
+      llm_format: openai
+      max_request_body_size: 8192
+      prompts:
+        append:
+        - content: ' Only use your existing knowledge to provide best possible answer
+            to user. You are an autonomous security auditor agent for Kong Gateway.
+            Your job is to evaluate whether a given Kong service is compliant with
+            enterprise security policies based on its configuration and enabled plugins.  -
+            The user will provide a Kong service name and a list of mapped plugins.
+            - For each security policy fetched, check if the mandatory plugin is enabled
+            for the service. - If all mandatory plugins are present, the service is
+            "Comply". - If any mandatory plugin is missing, the service is "Non-Comply".
+            - For non-compliant services, specify which plugin(s) are missing and
+            which security policy they are required for. - response should be in json
+            format containing serviceName, policy_name, comply status (true or false),
+            missing_plugins, details (if missing_plugins). The fields policy_name,
+            comply status (true or false), missing_plugins, details should always
+            be in policies array.'
+          role: system
+        prepend: null
+    enabled: true
+    name: ai-prompt-decorator
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+    tags:
+    - autonomous-security-auditor-agent
+  - config:
+      allow_all_conversation_history: false
+      allow_patterns: null
+      deny_patterns:
+      - (?i).*hack.*
+      - (?i).*phish.*
+      - (?i).*malware.*
+      - (?i).*SexuallyHarrassment.*
+      - (?i).*sexually explicit.*
+      - (?i).*harrasement.*
+      genai_category: text/generation
+      llm_format: openai
+      match_all_roles: false
+      max_request_body_size: 8192
+    enabled: true
+    name: ai-prompt-guard
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+    tags:
+    - autonomous-security-auditor-agent
+  - config:
+      allow_untemplated_requests: false
+      log_original_request: false
+      max_request_body_size: 8192
+      templates:
+      - name: audit-agent-template
+        template: |-
+          {
+                              "messages": [
+                                  {
+                                      "role": "user",
+                                      "content": f" I have fetched Kong service and its plugin configurations from Kong gateway. The service name is {{service_name}} and plugins are {{service_plugins}}"
+                                  }
+                              ]
+                          }
+    enabled: false
+    name: ai-prompt-template
+    ordering:
+      before:
+        access:
+        - ai-rag-injector
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+    tags:
+    - autonomous-security-auditor-agent
+  - config:
+      balancer:
+        algorithm: round-robin
+        connect_timeout: 60000
+        failover_criteria:
+        - error
+        - timeout
+        hash_on_header: X-Kong-LLM-Request-ID
+        latency_strategy: tpot
+        read_timeout: 60000
+        retries: 5
+        slots: 10000
+        tokens_count_strategy: total-tokens
+        write_timeout: 60000
+      embeddings:
+        auth:
+          allow_override: false
+          aws_access_key_id: null
+          aws_secret_access_key: null
+          azure_client_id: null
+          azure_client_secret: null
+          azure_tenant_id: null
+          azure_use_managed_identity: false
+          gcp_service_account_json: null
+          gcp_use_service_account: false
+          header_name: api-key
+          header_value: '{vault://MY_VAULT_CHANGE_ME/azure-api-key}'
+          param_location: null
+          param_name: null
+          param_value: null
+        model:
+          name: text-embedding-3-small
+          options:
+            azure:
+              api_version: 2024-12-01-preview
+              deployment_id: text-embedding-3-small
+              instance: AZURE_INSTANCE_NAME_CHANGE_ME
+            bedrock:
+              aws_assume_role_arn: null
+              aws_region: null
+              aws_role_session_name: null
+              aws_sts_endpoint_url: null
+              embeddings_normalize: false
+              performance_config_latency: null
+            gemini: null
+            huggingface: null
+            upstream_url: null
+          provider: azure
+      genai_category: text/generation
+      llm_format: openai
+      max_request_body_size: 8192
+      model_name_header: false
+      response_streaming: allow
+      targets:
+      - auth:
+          allow_override: false
+          aws_access_key_id: null
+          aws_secret_access_key: null
+          azure_client_id: null
+          azure_client_secret: null
+          azure_tenant_id: null
+          azure_use_managed_identity: false
+          gcp_service_account_json: null
+          gcp_use_service_account: false
+          header_name: api-key
+          header_value: '{vault://MY_VAULT_CHANGE_ME/azure-api-key}'
+          param_location: null
+          param_name: null
+          param_value: null
+        description: null
+        logging:
+          log_payloads: false
+          log_statistics: true
+        model:
+          name: gpt-4.1
+          options:
+            anthropic_version: null
+            azure_api_version: 2024-12-01-preview
+            azure_deployment_id: gpt-4.1
+            azure_instance: AZURE_INSTANCE_NAME_CHANGE_ME
+            bedrock:
+              aws_assume_role_arn: null
+              aws_region: null
+              aws_role_session_name: null
+              aws_sts_endpoint_url: null
+              embeddings_normalize: false
+              performance_config_latency: null
+            cohere:
+              embedding_input_type: classification
+              wait_for_model: null
+            embeddings_dimensions: null
+            gemini:
+              api_endpoint: null
+              location_id: null
+              project_id: null
+            huggingface:
+              use_cache: null
+              wait_for_model: null
+            input_cost: null
+            llama2_format: null
+            max_tokens: null
+            mistral_format: null
+            output_cost: null
+            temperature: null
+            top_k: null
+            top_p: null
+            upstream_path: null
+            upstream_url: null
+          provider: azure
+        route_type: llm/v1/chat
+        weight: 100
+      vectordb:
+        dimensions: 1536
+        distance_metric: cosine
+        pgvector:
+          database: kong-pgvector
+          host: 127.0.0.1
+          password: null
+          port: 5432
+          ssl: false
+          ssl_cert: null
+          ssl_cert_key: null
+          ssl_required: false
+          ssl_verify: false
+          ssl_version: tlsv1_2
+          timeout: 5000
+          user: postgres
+        redis:
+          cluster_addresses: null
+          cluster_max_redirections: 5
+          cluster_nodes: null
+          connect_timeout: 2000
+          connection_is_proxied: false
+          database: 0
+          host: redis
+          keepalive_backlog: null
+          keepalive_pool_size: 256
+          password: null
+          port: 6379
+          read_timeout: 2000
+          send_timeout: 2000
+          sentinel_addresses: null
+          sentinel_master: null
+          sentinel_nodes: null
+          sentinel_password: null
+          sentinel_role: null
+          sentinel_username: null
+          server_name: null
+          ssl: false
+          ssl_verify: false
+          timeout: 2000
+          username: null
+        strategy: redis
+        threshold: 0.2
+    enabled: true
+    name: ai-proxy-advanced
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+    tags:
+    - 'ai-manager-plugin-for: ai-manager-name: Azure_LLM'
+    - autonomous-security-auditor-agent
+  - config:
+      embeddings:
+        auth:
+          allow_override: false
+          aws_access_key_id: null
+          aws_secret_access_key: null
+          azure_client_id: null
+          azure_client_secret: null
+          azure_tenant_id: null
+          azure_use_managed_identity: false
+          gcp_service_account_json: null
+          gcp_use_service_account: false
+          header_name: api-key
+          header_value: '{vault://MY_VAULT_CHANGE_ME/azure-api-key}'
+          param_location: null
+          param_name: null
+          param_value: null
+        model:
+          name: text-embedding-3-small
+          options:
+            azure:
+              api_version: 2024-12-01-preview
+              deployment_id: text-embedding-3-small
+              instance: AZURE_INSTANCE_NAME_CHANGE_ME
+            bedrock:
+              aws_assume_role_arn: null
+              aws_region: null
+              aws_role_session_name: null
+              aws_sts_endpoint_url: null
+              embeddings_normalize: false
+              performance_config_latency: null
+            gemini: null
+            huggingface: null
+            upstream_url: https://AZURE_INSTANCE_NAME_CHANGE_ME.openai.azure.com/openai/deployments/DEPLOYMENT_ID_CHANGE_ME/embeddings?api-version=2023-05-15
+          provider: openai
+      fetch_chunks_count: 5
+      inject_as_role: user
+      inject_template: 'You are an assistant that must **only use the following context**
+        to answer. Do not use outside knowledge or any other resource. If the answer
+        is not in the context, respond: "I do not have enough information in the knowledge
+        base." <CONTEXT><RAG RESPONSE></CONTEXT>.  User''s question <PROMPT>.'
+      stop_on_failure: true
+      vectordb:
+        dimensions: 1536
+        distance_metric: cosine
+        pgvector:
+          database: kong-pgvector
+          host: 127.0.0.1
+          password: null
+          port: 5432
+          ssl: false
+          ssl_cert: null
+          ssl_cert_key: null
+          ssl_required: false
+          ssl_verify: false
+          ssl_version: tlsv1_2
+          timeout: 5000
+          user: postgres
+        redis:
+          cluster_addresses: null
+          cluster_max_redirections: 5
+          cluster_nodes: null
+          connect_timeout: 2000
+          connection_is_proxied: false
+          database: 0
+          host: REDIS_HOST_CHANGE_ME
+          keepalive_backlog: null
+          keepalive_pool_size: 256
+          password: null
+          port: 6379
+          read_timeout: 2000
+          send_timeout: 2000
+          sentinel_addresses: null
+          sentinel_master: null
+          sentinel_nodes: null
+          sentinel_password: null
+          sentinel_role: null
+          sentinel_username: null
+          server_name: null
+          ssl: false
+          ssl_verify: false
+          timeout: 2000
+          username: null
+        strategy: redis
+      vectordb_namespace: security_auditor_index
+    enabled: true
+    name: ai-rag-injector
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+    tags:
+    - autonomous-security-auditor-agent
+  - config:
+      http_proxy_host: null
+      http_proxy_port: null
+      http_timeout: 60000
+      https_proxy_host: null
+      https_proxy_port: null
+      https_verify: true
+      llm:
+        auth:
+          allow_override: false
+          aws_access_key_id: null
+          aws_secret_access_key: null
+          azure_client_id: null
+          azure_client_secret: null
+          azure_tenant_id: null
+          azure_use_managed_identity: false
+          gcp_service_account_json: null
+          gcp_use_service_account: false
+          header_name: api-key
+          header_value: '{vault://MY_VAULT_CHANGE_ME/azure-api-key}'
+          param_location: null
+          param_name: null
+          param_value: null
+        logging:
+          log_payloads: false
+          log_statistics: false
+        model:
+          name: gpt-4.1
+          options:
+            anthropic_version: null
+            azure_api_version: 2024-12-01-preview
+            azure_deployment_id: gpt-4.1
+            azure_instance: AZURE_INSTANCE_NAME_CHANGE_ME
+            bedrock:
+              aws_assume_role_arn: null
+              aws_region: null
+              aws_role_session_name: null
+              aws_sts_endpoint_url: null
+              embeddings_normalize: false
+              performance_config_latency: null
+            cohere:
+              embedding_input_type: classification
+              wait_for_model: null
+            embeddings_dimensions: null
+            gemini: null
+            huggingface: null
+            input_cost: null
+            llama2_format: null
+            max_tokens: null
+            mistral_format: null
+            output_cost: null
+            temperature: null
+            top_k: null
+            top_p: null
+            upstream_path: null
+            upstream_url: null
+          provider: azure
+        route_type: llm/v1/chat
+      max_request_body_size: 8192
+      parse_llm_response_json_instructions: false
+      prompt: Just keep the response json mentioned in content field. remove rest
+        all content.
+      transformation_extract_pattern: null
+    enabled: true
+    name: ai-response-transformer
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+    tags:
+    - autonomous-security-auditor-agent
+  - config:
+      anonymous: null
+      hide_credentials: false
+      identity_realms:
+      - id: null
+        region: null
+        scope: cp
+      key_in_body: false
+      key_in_header: true
+      key_in_query: false
+      key_names:
+      - x-api-key
+      realm: null
+      run_on_preflight: true
+    enabled: true
+    name: key-auth
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+    - ws
+    - wss
+    tags:
+    - autonomous-security-auditor-agent
+  port: 80
+  protocol: http
+  read_timeout: 60000
+  retries: 5
+  routes:
+  - https_redirect_status_code: 426
+    methods:
+    - GET
+    - POST
+    - PATCH
+    - PUT
+    - OPTIONS
+    name: AuditorAgentAI_Route
+    path_handling: v0
+    paths:
+    - /api/v1/agents/auditor
+    preserve_host: false
+    protocols:
+    - http
+    - https
+    regex_priority: 0
+    request_buffering: true
+    response_buffering: true
+    strip_path: true
+    tags:
+    - 'ai-manager-route-for: ai-manager-name: Azure_LLM'
+    - autonomous-security-auditor-agent
+  - https_redirect_status_code: 426
+    methods:
+    - GET
+    - POST
+    - OPTIONS
+    name: RemediateAgentAI_Route
+    path_handling: v0
+    paths:
+    - /api/v1/agents/remediate
+    preserve_host: false
+    protocols:
+    - http
+    - https
+    regex_priority: 0
+    request_buffering: true
+    response_buffering: true
+    strip_path: true
+    tags:
+    - autonomous-security-auditor-agent
+  tags:
+  - ai-manager-created
+  - 'ai-manager-name: Azure_LLM'
+  - autonomous-security-auditor-agent
+  write_timeout: 60000

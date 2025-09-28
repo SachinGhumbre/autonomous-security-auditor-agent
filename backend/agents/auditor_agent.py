@@ -1,3 +1,16 @@
+"""
+===============================================================================
+ File Name   : auditor_agent.py
+ Description : Autonomous Security Auditor Agent file containing two agents 
+               Audit and Remediate for Kong Konnect configurations.
+ Author      : Sachin Ghumbre
+ Created On  : 2025-09-26
+ Version     : v1.0.0
+ License     : Proprietary
+ Tags        : kong, konnect, genai, audit, langgraph, agentic ai
+===============================================================================
+"""
+
 from fileinput import filename
 from click import prompt
 from langgraph.graph import StateGraph
