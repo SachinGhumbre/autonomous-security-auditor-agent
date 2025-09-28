@@ -3,26 +3,51 @@
     "serviceName": "HealthService",
     "policies": [
       {
-        "policy_name": "API Authentication Enforcement",
+        "policy_name": "Authentication Policy",
         "comply": true,
         "missing_plugins": [],
         "details": ""
       },
       {
-        "policy_name": "API Request Content Validation",
-        "comply": false,
-        "missing_plugins": [
-          "request-size-limiting"
-        ],
-        "details": "The 'request-size-limiting' plugin is required to comply with enterprise policy for request content validation, but it is missing from the service."
-      },
-      {
-        "policy_name": "Transport Security Enforcement",
+        "policy_name": "Authorization Policy",
         "comply": false,
         "missing_plugins": [
           "acl"
         ],
-        "details": "The 'acl' plugin is required to enforce transport security policies (such as network-level access control), but it is missing from the service."
+        "details": "The 'acl' plugin is required to enforce Authorization Policy but it is not enabled for HealthService."
+      },
+      {
+        "policy_name": "Request Security Policy",
+        "comply": true,
+        "missing_plugins": [],
+        "details": ""
+      }
+    ]
+  },
+  "ApigeeToKongGenAIService:policy:ApigeeToKongGenAIService": {
+    "serviceName": "ApigeeToKongGenAIService",
+    "policies": [
+      {
+        "policy_name": "API Authentication Policy",
+        "comply status": true,
+        "missing_plugins": [],
+        "details": ""
+      },
+      {
+        "policy_name": "Rate Limiting Policy",
+        "comply status": false,
+        "missing_plugins": [
+          "rate-limiting"
+        ],
+        "details": "The 'rate-limiting' plugin is required to enforce API rate limiting per enterprise security policies."
+      },
+      {
+        "policy_name": "Logging Policy",
+        "comply status": false,
+        "missing_plugins": [
+          "http-log"
+        ],
+        "details": "The 'http-log' plugin is required to ensure API traffic logs are centrally stored, per logging and audit requirements."
       }
     ]
   },
@@ -30,40 +55,22 @@
     "serviceName": "KongTest",
     "policies": [
       {
-        "policy_name": "Rate Limiting Policy",
+        "policy_name": "Authentication Policy",
         "comply": true,
         "missing_plugins": [],
-        "details": null
+        "details": ""
+      },
+      {
+        "policy_name": "API Rate Limiting Policy",
+        "comply": true,
+        "missing_plugins": [],
+        "details": ""
       },
       {
         "policy_name": "IP Restriction Policy",
         "comply": true,
         "missing_plugins": [],
-        "details": null
-      },
-      {
-        "policy_name": "OAuth2 Policy",
-        "comply": true,
-        "missing_plugins": [],
-        "details": null
-      },
-      {
-        "policy_name": "API Key Authentication Policy",
-        "comply": true,
-        "missing_plugins": [],
-        "details": null
-      },
-      {
-        "policy_name": "Request Transformation Policy",
-        "comply": true,
-        "missing_plugins": [],
-        "details": null
-      },
-      {
-        "policy_name": "Basic Authentication Policy",
-        "comply": true,
-        "missing_plugins": [],
-        "details": null
+        "details": ""
       }
     ]
   }

@@ -1,26 +1,14 @@
 [
   {
     "serviceName": "HealthService",
-    "policyName": "Data Masking & Sensitive Headers Policy",
-    "issue": "Required 'response-transformer' plugin is not enabled, violating the Data Masking & Sensitive Headers Policy.",
-    "missingPlugin": "response-transformer",
-    "recommendedAction": "Enable and configure the 'response-transformer' plugin to mask sensitive information and headers in API responses.",
+    "policyName": "Authorization Policy",
+    "issue": "Required authorization policy is not enforced due to missing 'acl' plugin.",
+    "missingPlugin": "acl",
+    "recommendedAction": "Enable the 'acl' plugin for HealthService to enforce authorization policies and restrict access to only authorized clients.",
     "severity": "Medium",
-    "owner": "HealthService API Team",
+    "owner": "API Gateway Team",
     "estimatedEffort": "2 hours",
-    "impact": "Without response transformation, sensitive data may be inadvertently exposed in API responses, increasing risk of data leakage.",
-    "securityStandardReference": "OWASP API Security Top 10 \u2013 API6:2019 (Sensitive Data Exposure)"
-  },
-  {
-    "serviceName": "KongTest",
-    "policyName": "Authentication Enforcement",
-    "issue": "Required 'jwt' plugin is missing, violating policy for secure token-based authentication.",
-    "missingPlugin": "jwt",
-    "recommendedAction": "Deploy the 'jwt' plugin to enforce JWT-based authentication and ensure only authorized clients access the APIs.",
-    "severity": "Critical",
-    "owner": "KongTest API Team",
-    "estimatedEffort": "4 hours",
-    "impact": "Missing JWT authentication makes APIs vulnerable to unauthorized access and attacks, risking compromise of protected resources.",
-    "securityStandardReference": "OWASP API Security Top 10 \u2013 API2:2019 (Broken User Authentication), NIST SP 800-53 IA-2"
+    "impact": "Without the 'acl' plugin, unauthorized access to sensitive health-related endpoints is possible, potentially leading to data breaches.",
+    "securityStandardReference": "OWASP API Security Top 10 (API5:2019 - Broken Function Level Authorization)"
   }
 ]
