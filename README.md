@@ -232,4 +232,8 @@ username: kong_champion, password: Kong@123
 - Click on `Start Security Audit and Generate Report` to start validating your Kong proxies/services whether follow organizaton security polices and do not miss any mandatory plugins
 - Click on `Run Remediation Plan`
 
+# User Manual - Steps to Execute the Application
+- Refer below document for detailed steps to execute the Autonomous Security Auditor Agentic AI application.
+
+[User Manual - Execution Steps for Autonomous Security Auditor Agents.pdf](<User Manual - Execution Steps for Autonomous Security Auditor Agents.pdf>)
 
