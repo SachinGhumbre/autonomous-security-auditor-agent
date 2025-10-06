@@ -48,4 +48,4 @@ Thumbs.db
 *.wmv
 
 # Large media files
-.env
+backend/.env
