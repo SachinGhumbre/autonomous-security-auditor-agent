@@ -14,6 +14,7 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from auditor_agent import audit_app, rem_app
+import json
 
 # Constants
 AUDIT_ROUTE = '/api/v1/ai-agents/audit'
@@ -28,6 +29,7 @@ CORS(app)
 def run_audit() -> tuple:
     """Invoke the Audit Agent with input data."""
     input_data = request.get_json(force=True) or {}
+    ##print("input_Data: ", input_data)
     try:
         result = audit_app.invoke(input_data)
         return jsonify(result), 200

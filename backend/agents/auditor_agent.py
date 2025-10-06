@@ -85,6 +85,9 @@ def perceive_kong(state: Dict[str, Any]) -> Dict[str, Any]:
 def reason_audit(state: Dict[str, Any]) -> Dict[str, Any]:
     print("[AuditAgent] Reasoning: Evaluating policy compliance...")
 
+    selected_standards = state.get("selected_standards", {})
+    ##print("selected_standards Data......:", selected_standards)
+
     audit_report = {}
     kong_data_list = state.get("kong_data", [])
 
@@ -100,7 +103,7 @@ def reason_audit(state: Dict[str, Any]) -> Dict[str, Any]:
                     "role": "user",
                     "content": (
                         f"I have fetched Kong service and its plugin configurations from Kong gateway. "
-                        f"The service name is {service_name} and plugins are {service_plugins}"
+                        f"The service name is {service_name} and plugins are {service_plugins}. And security standards for which this service needs to be audited are {selected_standards}"
                     )
                 }
             ]
@@ -229,7 +232,6 @@ audit_graph.add_edge("plan", "act")
 audit_app = audit_graph.compile()
 
 audit_state = audit_app.invoke({})
-
 # === Build and Run Remediation Agent Graph ===
 
 rem_graph = StateGraph(dict)

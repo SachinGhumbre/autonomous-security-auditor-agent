@@ -3,24 +3,25 @@
     "serviceName": "HealthService",
     "policies": [
       {
-        "policy_name": "Authentication Policy",
-        "comply": true,
-        "missing_plugins": [],
-        "details": ""
-      },
-      {
-        "policy_name": "Authorization Policy",
+        "policy_name": "PSD2/SCA",
         "comply": false,
         "missing_plugins": [
-          "acl"
+          "oauth2"
         ],
-        "details": "The 'acl' plugin is required to enforce Authorization Policy but it is not enabled for HealthService."
-      },
+        "details": "The 'oauth2' plugin is required for strong customer authentication (SCA) under PSD2. Currently, only 'request-transformer' and 'key-auth' are enabled. Please add 'oauth2' to comply with PSD2/SCA requirements."
+      }
+    ]
+  },
+  "ApigeeToKongGenAIService:policy:ApigeeToKongGenAIService": {
+    "serviceName": "ApigeeToKongGenAIService",
+    "policies": [
       {
-        "policy_name": "Request Security Policy",
-        "comply": true,
-        "missing_plugins": [],
-        "details": ""
+        "policy_name": "PSD2/SCA",
+        "comply": false,
+        "missing_plugins": [
+          "oauth2"
+        ],
+        "details": "The 'PSD2/SCA' policy requires the 'oauth2' plugin for strong customer authentication. The 'key-auth' plugin alone is insufficient for PSD2/SCA compliance."
       }
     ]
   },
@@ -28,19 +29,7 @@
     "serviceName": "KongTest",
     "policies": [
       {
-        "policy_name": "Authentication Policy",
-        "comply": true,
-        "missing_plugins": [],
-        "details": ""
-      },
-      {
-        "policy_name": "API Rate Limiting Policy",
-        "comply": true,
-        "missing_plugins": [],
-        "details": ""
-      },
-      {
-        "policy_name": "IP Restriction Policy",
+        "policy_name": "PSD2/SCA",
         "comply": true,
         "missing_plugins": [],
         "details": ""

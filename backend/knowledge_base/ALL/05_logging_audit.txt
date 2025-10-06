@@ -1,0 +1,3 @@
+Policy Name: Logging & Audit Trails Policy v1.0
+Mandatory Plugins to Comply to this policy: any one of http-log, syslog, tcp-log, udp-log
+Description: This policy defines the logging and audit trail mechanisms supported by Kong Gateway to ensure that all

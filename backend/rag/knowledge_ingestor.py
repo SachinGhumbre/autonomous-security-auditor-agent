@@ -22,6 +22,7 @@ from openai import AzureOpenAI
 import redis
 from redis.commands.search.field import TagField, VectorField, TextField
 from redis.commands.search.index_definition import IndexDefinition, IndexType
+import json
 
 # Load environment variables
 load_dotenv()
@@ -147,6 +148,26 @@ def ingest_knowledge_base() -> tuple:
         "index_name": INDEX_NAME
     }), 200
 
+@app.route('/api/v1/knowledge/get_all_embeddings', methods=['GET'])
+def get_all_embeddings():
+    try:
+        # Use FT.SEARCH to get all documents from the index
+        query = "*"
+        result = redis_client.ft(INDEX_NAME).search(query)
+
+        embeddings = []
+        for doc in result.docs:
+            embeddings.append({
+                "id": doc.id,
+                "embedding": json.loads(doc.embedding),  # assuming embedding is stored as JSON string
+                "metadata": {k: v for k, v in doc.__dict__.items() if k not in ['id', 'embedding']}
+            })
+
+        return jsonify({"count": len(embeddings), "embeddings": embeddings})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
 
 if __name__ == '__main__':
     app.run(debug=True, port=5001)
