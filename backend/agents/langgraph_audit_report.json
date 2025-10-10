@@ -3,25 +3,57 @@
     "serviceName": "HealthService",
     "policies": [
       {
-        "policy_name": "PSD2/SCA",
+        "policy_name": "GDPR",
         "comply": false,
         "missing_plugins": [
-          "oauth2"
+          "ip-restriction",
+          "rate-limiting"
         ],
-        "details": "The 'oauth2' plugin is required for strong customer authentication (SCA) under PSD2. Currently, only 'request-transformer' and 'key-auth' are enabled. Please add 'oauth2' to comply with PSD2/SCA requirements."
-      }
-    ]
-  },
-  "ApigeeToKongGenAIService:policy:ApigeeToKongGenAIService": {
-    "serviceName": "ApigeeToKongGenAIService",
-    "policies": [
+        "details": "The 'ip-restriction' plugin is required for data minimization and regional access controls under GDPR. 'rate-limiting' helps prevent abuse and data leakage."
+      },
       {
-        "policy_name": "PSD2/SCA",
+        "policy_name": "HIPAA",
         "comply": false,
         "missing_plugins": [
-          "oauth2"
+          "acl",
+          "rate-limiting"
         ],
-        "details": "The 'PSD2/SCA' policy requires the 'oauth2' plugin for strong customer authentication. The 'key-auth' plugin alone is insufficient for PSD2/SCA compliance."
+        "details": "The 'acl' plugin is required for controlling access to PHI. 'rate-limiting' is important for safeguarding against DoS attacks per HIPAA requirements."
+      },
+      {
+        "policy_name": "PCI-DSS",
+        "comply": false,
+        "missing_plugins": [
+          "acl",
+          "rate-limiting"
+        ],
+        "details": "'acl' enforces role-based access to credit card data. 'rate-limiting' is needed to mitigate brute-force and DDoS attacks."
+      },
+      {
+        "policy_name": "ISO 27001",
+        "comply": false,
+        "missing_plugins": [
+          "acl",
+          "rate-limiting"
+        ],
+        "details": "Both 'acl' and 'rate-limiting' support ISO 27001 requirements around access control and availability of information systems."
+      },
+      {
+        "policy_name": "OWASP API Top 10",
+        "comply": false,
+        "missing_plugins": [
+          "rate-limiting"
+        ],
+        "details": "'rate-limiting' is required to protect against API abuse and DoS attacks per OWASP API Top 10."
+      },
+      {
+        "policy_name": "SOC 2",
+        "comply": false,
+        "missing_plugins": [
+          "acl",
+          "rate-limiting"
+        ],
+        "details": "'acl' helps enforce logical access controls for SOC 2 compliance. 'rate-limiting' addresses availability criteria."
       }
     ]
   },
@@ -29,7 +61,37 @@
     "serviceName": "KongTest",
     "policies": [
       {
-        "policy_name": "PSD2/SCA",
+        "policy_name": "GDPR",
+        "comply": true,
+        "missing_plugins": [],
+        "details": ""
+      },
+      {
+        "policy_name": "HIPAA",
+        "comply": true,
+        "missing_plugins": [],
+        "details": ""
+      },
+      {
+        "policy_name": "PCI-DSS",
+        "comply": true,
+        "missing_plugins": [],
+        "details": ""
+      },
+      {
+        "policy_name": "ISO 27001",
+        "comply": true,
+        "missing_plugins": [],
+        "details": ""
+      },
+      {
+        "policy_name": "OWASP API Top 10",
+        "comply": true,
+        "missing_plugins": [],
+        "details": ""
+      },
+      {
+        "policy_name": "SOC 2",
         "comply": true,
         "missing_plugins": [],
         "details": ""

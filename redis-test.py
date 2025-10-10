@@ -12,7 +12,7 @@ app = Flask(__name__)
 CORS(app)
 
 # Constants
-REDIS_HOST = "ec2-13-53-194-245.eu-north-1.compute.amazonaws.com"
+REDIS_HOST = "REDIS_HOSTNAME"
 REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
 VECTOR_DIMENSIONS = int(os.getenv("VECTOR_DIMENSIONS", 1536))
 INDEX_NAME = os.getenv("INDEX_NAME", "security_auditor_index")

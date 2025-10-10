@@ -1,1 +1,91 @@
-[]
+[
+  {
+    "serviceName": "HealthService",
+    "policyName": "GDPR",
+    "issue": "Missing plugins needed for GDPR compliance.",
+    "missingPlugin": [
+      "ip-restriction",
+      "rate-limiting"
+    ],
+    "recommendedAction": "Enable 'ip-restriction' and 'rate-limiting' plugins to secure personally identifiable data and maintain regulatory compliance.",
+    "severity": "Medium",
+    "owner": "API Security Team",
+    "estimatedEffort": "2h",
+    "impact": "Medium; exposes service to risks of privacy breaches and non-compliance.",
+    "securityStandardReference": "GDPR"
+  },
+  {
+    "serviceName": "HealthService",
+    "policyName": "HIPAA",
+    "issue": "Missing mandatory plugins for HIPAA compliance.",
+    "missingPlugin": [
+      "acl",
+      "rate-limiting"
+    ],
+    "recommendedAction": "Enable 'acl' and 'rate-limiting' plugins to enforce access restrictions and protect against traffic abuse.",
+    "severity": "Medium",
+    "owner": "API Security Team",
+    "estimatedEffort": "2h",
+    "impact": "High; PHI may be improperly accessed or exposed.",
+    "securityStandardReference": "HIPAA"
+  },
+  {
+    "serviceName": "HealthService",
+    "policyName": "PCI-DSS",
+    "issue": "Missing plugins required for PCI-DSS compliance.",
+    "missingPlugin": [
+      "acl",
+      "rate-limiting"
+    ],
+    "recommendedAction": "Enable 'acl' for role-based access and 'rate-limiting' to protect payment data integrity.",
+    "severity": "Medium",
+    "owner": "API Security Team",
+    "estimatedEffort": "2h",
+    "impact": "High; failure to control access or usage jeopardizes cardholder data and may incur penalties.",
+    "securityStandardReference": "PCI-DSS"
+  },
+  {
+    "serviceName": "HealthService",
+    "policyName": "ISO 27001",
+    "issue": "Missing plugins required for ISO 27001 compliance.",
+    "missingPlugin": [
+      "acl",
+      "rate-limiting"
+    ],
+    "recommendedAction": "Enable 'acl' and 'rate-limiting' plugins to align with access control and availability measures.",
+    "severity": "Medium",
+    "owner": "API Security Team",
+    "estimatedEffort": "2h",
+    "impact": "Medium; missing controls undermine ISMS objectives.",
+    "securityStandardReference": "ISO 27001"
+  },
+  {
+    "serviceName": "HealthService",
+    "policyName": "OWASP API Top 10",
+    "issue": "Missing plugin required for OWASP API Top 10 protection.",
+    "missingPlugin": [
+      "rate-limiting"
+    ],
+    "recommendedAction": "Enable the 'rate-limiting' plugin to guard against API abuse and DoS attacks.",
+    "severity": "Medium",
+    "owner": "API Security Team",
+    "estimatedEffort": "1h",
+    "impact": "Medium; API may be vulnerable to excessive requests.",
+    "securityStandardReference": "OWASP"
+  },
+  {
+    "serviceName": "HealthService",
+    "policyName": "SOC 2",
+    "issue": "Missing plugins required for SOC 2 compliance.",
+    "missingPlugin": [
+      "acl",
+      "rate-limiting"
+    ],
+    "recommendedAction": "Enable 'acl' to support logical access and 'rate-limiting' to ensure availability.",
+    "severity": "Medium",
+    "owner": "API Security Team",
+    "estimatedEffort": "2h",
+    "impact": "High; missing controls could affect audit outcomes and service reliability.",
+    "securityStandardReference": "SOC 2"
+  }
+]
