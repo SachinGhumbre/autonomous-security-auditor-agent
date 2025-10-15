@@ -1,5 +1,7 @@
+
 import React, { useEffect, useMemo, useState } from 'react';
 import Toast from './Toast';
+
 function Dashboard() {
   const [auditsReport, setAuditsReport] = useState([]);
   const [ingestedData, setIngestedData] = useState([]);
@@ -9,6 +11,68 @@ function Dashboard() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [activeButton, setActiveButton] = useState('');
+  const [selectedStandards, setSelectedStandards] = useState([]);
+
+  const securityStandardsList = [
+    "GDPR", "HIPAA", "PCI-DSS", "ISO 27001", "OWASP API Top 10",
+    "PSD2/SCA", "PIPEDA", "NIST", "SOC 2", "All Security Standards"
+  ];
+
+const toggleStandard = (standard) => {
+  if (standard === "All Security Standards") {
+    if (selectedStandards.includes("All Security Standards")) {
+      // Deselect all
+      setSelectedStandards([]);
+    } else {
+      // Select all
+      setSelectedStandards([...securityStandardsList]);
+    }
+  } else {
+    setSelectedStandards(prev => {
+      const updated = prev.includes(standard)
+        ? prev.filter(s => s !== standard)
+        : [...prev, standard];
+
+      // If all individual standards are selected, include "All Security Standards"
+      const allExceptAll = securityStandardsList.filter(s => s !== "All Security Standards");
+      const allSelected = allExceptAll.every(s => updated.includes(s));
+
+      if (allSelected && !updated.includes("All Security Standards")) {
+        return [...updated, "All Security Standards"];
+      }
+
+      // If deselecting any individual standard, remove "All Security Standards"
+      if (!allSelected && updated.includes("All Security Standards")) {
+        return updated.filter(s => s !== "All Security Standards");
+      }
+
+      return updated;
+    });
+  }
+};
+
+  const handleGenerateAuditReport = () => {
+    if (!auditsReport || auditsReport.length === 0) {
+      setMessage('❌ No audit report available to download.');
+      return;
+    }
+    const blob = new Blob([auditsReport], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'audit_report.json';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  useEffect(() => {
+    if (message) {
+      const timer = setTimeout(() => setMessage(''), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [message]);
 
   const handleIngestEmbeddings = async () => {
     setLoading(true);
@@ -46,10 +110,15 @@ function Dashboard() {
     setReport(null);
     setAuditsReport([]);
     setIngestedData([]);
+
+    //alert("selectedStandards: "+selectedStandards)
     try {
       const response = await fetch('http://localhost:5000/api/v1/ai-agents/audit', {
+      //const response = await fetch('https://httpbin.org/post', {
         method: 'POST',
-        body: JSON.stringify({}),
+        body: JSON.stringify({
+          selected_standards: selectedStandards
+        }),
         headers: { 'Content-Type': 'application/json' }
       });
       if (response.ok) {
@@ -86,10 +155,6 @@ function Dashboard() {
     }
   };
 
-  const handleGenerateAuditReport = () => {
-    alert('Generating Audit report...');
-  };
-
   const fetchRemediationPlan = async () => {
     setMessage('');
     setIngestedData([]);
@@ -110,7 +175,6 @@ function Dashboard() {
       }
 
       const data = await response.json();
-
       setRemediationData(data);
     } catch (err) {
       console.error('Error fetching remediation plan:', err);
@@ -140,20 +204,45 @@ function Dashboard() {
     setIngestedData([]);
     setRemediationData([]);
     setError(null);
+    setSelectedStandards([]);
   };
 
   return (
     <div className="container mx-auto p-6 bg-gray-50 rounded-lg shadow-lg">
-
       {error && (
         <p className="text-red-600 text-sm font-medium">{error}</p>
       )}
 
-
       {message && (
         <Toast message={message} type={message.includes('success') ? 'success' : 'error'} />
       )}
-      
+
+{/* Security Standards Selection */}
+<div className="mb-6">
+  <h1 className="text-lg font-semibold text-gray-700 mb-4 text-center">
+    Select Security Standards
+  </h1>
+  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+    {securityStandardsList.map((standard) => {
+      const isSelected = selectedStandards.includes(standard);
+      return (
+        <div
+          key={standard}
+          onClick={() => toggleStandard(standard)}
+          className={`cursor-pointer p-3 rounded-lg shadow-md border transition duration-300 ease-in-out flex items-center justify-between
+            ${isSelected ? 'bg-blue-900 text-white border-blue-700' : 'bg-gradient-to-r from-blue-100 via-blue-200 to-blue-300 text-gray-800 hover:from-blue-200 hover:via-blue-300 hover:to-blue-400 border-gray-300'}`}
+        >
+          <span className="text-sm font-medium">{standard}</span>
+          <div className="relative inline-block w-10 h-5 align-middle select-none transition duration-200 ease-in">
+            <div className={`w-10 h-5 rounded-full shadow-inner ${isSelected ? 'bg-green-500' : 'bg-gray-300'}`}>
+              <div className={`absolute top-0.5 left-0.5 w-3.5 h-3.5 bg-white rounded-full transition transform ${isSelected ? 'translate-x-5' : ''}`}></div>
+            </div>
+          </div>
+        </div>
+      );
+    })}
+  </div>
+</div>
       {/* Action Buttons */}
       <div className="flex flex-wrap gap-4 justify-center mb-6">
         <button
@@ -361,8 +450,6 @@ function Dashboard() {
 
         {/* Remediation Plan Table */}
         {remediationData.length > 0 && (
-
-
           <div className="w-full overflow-x-auto">
             <h3 className="text-2xl font-bold text-center text-white bg-gradient-to-r from-blue-700 to-blue-900 py-3 rounded shadow-md mb-6">
               Remediation Plan
@@ -449,8 +536,10 @@ function Dashboard() {
           </div>
         )}
 
+
       </div>
     </div>
   );
 }
+
 export default Dashboard;
