@@ -1,0 +1,50 @@
+{
+  "HealthService:policy:HealthService": {
+    "serviceName": "HealthService",
+    "policies": [
+      {
+        "policy_name": "Authentication Policy",
+        "comply": true,
+        "missing_plugins": [],
+        "details": ""
+      },
+      {
+        "policy_name": "Authorization Policy",
+        "comply": false,
+        "missing_plugins": [
+          "acl"
+        ],
+        "details": "The 'acl' plugin is required to enforce Authorization Policy but it is not enabled for HealthService."
+      },
+      {
+        "policy_name": "Request Security Policy",
+        "comply": true,
+        "missing_plugins": [],
+        "details": ""
+      }
+    ]
+  },
+  "KongTest:policy:KongTest": {
+    "serviceName": "KongTest",
+    "policies": [
+      {
+        "policy_name": "Authentication Policy",
+        "comply": true,
+        "missing_plugins": [],
+        "details": ""
+      },
+      {
+        "policy_name": "API Rate Limiting Policy",
+        "comply": true,
+        "missing_plugins": [],
+        "details": ""
+      },
+      {
+        "policy_name": "IP Restriction Policy",
+        "comply": true,
+        "missing_plugins": [],
+        "details": ""
+      }
+    ]
+  }
+}
